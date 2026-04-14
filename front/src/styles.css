@@ -1,0 +1,217 @@
+/* Bootstrap & Global Styles */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+/* Navbar Styling */
+.navbar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #fff !important;
+  letter-spacing: -0.5px;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin: 0 0.5rem;
+}
+
+.nav-link:hover {
+  color: #fff !important;
+  transform: translateY(-2px);
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 5rem 0;
+  margin-top: -56px;
+  padding-top: 8rem;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+}
+
+.hero-section h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.hero-section p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  line-height: 1.6;
+}
+
+.hero-btn {
+  background-color: #fff;
+  color: #667eea;
+  font-weight: 600;
+  padding: 0.75rem 2.5rem;
+  border: none;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+.hero-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.hero-btn-secondary {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+}
+
+.hero-btn-secondary:hover {
+  background-color: #fff;
+  color: #667eea;
+}
+
+/* Features Section */
+.features-section {
+  padding: 5rem 0;
+  background-color: #f8f9fa;
+}
+
+.features-section h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: #333;
+}
+
+.feature-card {
+  padding: 2rem;
+  border-radius: 10px;
+  background-color: white;
+  border: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.feature-card h5 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.feature-card p {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.cta-section p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+/* Footer */
+footer {
+  background-color: #222;
+  color: white;
+  padding: 3rem 0 1rem;
+  margin-top: 5rem;
+}
+
+footer h6 {
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+footer a {
+  color: #bbb;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+footer a:hover {
+  color: #fff;
+}
+
+footer .footer-link {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.footer-bottom {
+  border-top: 1px solid #444;
+  padding-top: 2rem;
+  margin-top: 2rem;
+  text-align: center;
+  color: #999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section h1 {
+    font-size: 2rem;
+  }
+
+  .hero-section p {
+    font-size: 1rem;
+  }
+
+  .features-section h2 {
+    font-size: 1.8rem;
+  }
+
+  .cta-section h2 {
+    font-size: 1.8rem;
+  }
+}
