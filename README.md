@@ -1,10 +1,12 @@
-# ProyectoIntegrador
+# NutriApp
 
-Proyecto full-stack moderno que integra **Angular** en el frontend con **Django REST Framework** en el backend, conectado a una base de datos **MySQL**.
+**NutriApp** es una aplicación web diseñada para brindar planes personalizados de nutrición y entrenamiento físico, adaptados a las necesidades de cada usuario.
+
+La plataforma tiene como objetivo principal ayudar a las personas a mejorar su salud y condición física, ya sea aumentando o disminuyendo su masa corporal, mediante recomendaciones específicas basadas en su perfil.
 
 ## 📋 Descripción
 
-ProyectoIntegrador es una solución completa que demuestra una arquitectura moderna de aplicación web con:
+NutriApp es una solución full-stack moderna que integra **Angular** en el frontend con **Django REST Framework** en el backend, conectado a una base de datos **MySQL**.
 
 - **Frontend**: Angular v21+ con Bootstrap (sin CDN)
 - **Backend**: Django REST Framework con MySQL
@@ -15,6 +17,7 @@ ProyectoIntegrador es una solución completa que demuestra una arquitectura mode
 ## 🚀 Características
 
 ✅ Landing page responsive con Bootstrap  
+✅ Planes personalizados de nutrición y entrenamiento  
 ✅ API RESTful completa  
 ✅ Base de datos MySQL  
 ✅ Variables de entorno (.env)  
@@ -26,7 +29,7 @@ ProyectoIntegrador es una solución completa que demuestra una arquitectura mode
 ## 📁 Estructura del Proyecto
 
 ```
-proyectoIntegrador/
+NutriApp/
 ├── front/                 # Frontend Angular
 │   ├── src/
 │   │   ├── app/          # Componente principal
@@ -40,36 +43,72 @@ proyectoIntegrador/
 │   ├── requirements.txt
 │   ├── .env              # Variables de entorno (no subir a Git)
 │   └── .env_modelo       # Plantilla de variables
-├── INSTALL.md            # Guía de instalación
 └── README.md             # Este archivo
 ```
 
-## 🛠️ Instalación Rápida
+## 🛠️ Instalación
+
+### Requisitos previos
+
+- Python 3.x
+- Node.js y npm
+- Angular CLI (`npm install -g @angular/cli`)
+- MySQL Server
 
 ### Frontend
+
 ```bash
 cd front
 npm install
-npm start
+ng serve
 ```
 
 ### Backend
+
 ```bash
 cd back
+python -m venv venv
+source venv/Scripts/activate      # Windows (Bash)
+# source venv/bin/activate         # Linux/Mac
 pip install -r requirements.txt
-# Copiar .env_modelo a .env y configurar
+cp .env_modelo .env               # Completar con tus datos
 python manage.py migrate
 python manage.py runserver
 ```
 
-**Ver [INSTALL.md](./INSTALL.md) para instalación detallada**
+### Variables de entorno
 
-## 🌐 URLs
+Completar el archivo `.env` con los datos de tu entorno local:
 
-- **Frontend**: http://localhost:4200
-- **Backend**: http://localhost:8000
-- **API**: http://localhost:8000/api/
-- **Admin**: http://localhost:8000/admin/
+```env
+SECRET_KEY=tu-secret-key
+DEBUG=True
+DB_NAME=nutriapp
+DB_USER=root
+DB_PASSWORD=tu_contraseña
+DB_HOST=localhost
+DB_PORT=3306
+FRONTEND_URL=http://localhost:4200
+```
+
+> ⚠️ Nunca subir `.env` a Git.
+
+## 🌐 Uso básico
+
+Una vez levantados ambos servidores:
+
+| Servicio | URL |
+|----------|-----|
+| Frontend | http://localhost:4200 |
+| Backend | http://localhost:8000 |
+| API | http://localhost:8000/api/ |
+| Admin Django | http://localhost:8000/admin/ |
+
+Para crear un superusuario y acceder al admin:
+
+```bash
+python manage.py createsuperuser
+```
 
 ## 📡 API Endpoints
 
@@ -84,55 +123,36 @@ python manage.py runserver
 | PUT | `/api/usuarios/{id}/` | Actualizar usuario |
 | DELETE | `/api/usuarios/{id}/` | Eliminar usuario |
 
-## 🔑 Variables de Entorno
+## 📝 Requerimientos
 
-### Backend (.env_modelo → .env)
+### Requerimientos Funcionales (RF)
 
-```env
-SECRET_KEY=tu-secret-key
-DEBUG=True
-DB_NAME=proyectointegrador
-DB_USER=root
-DB_PASSWORD=tu_contraseña
-DB_HOST=localhost
-DB_PORT=3306
-FRONTEND_URL=http://localhost:4200
-```
+| N° | Descripción |
+|----|-------------|
+| RF1 | El sistema debe permitir el registro de nuevos usuarios. |
+| RF2 | El sistema debe permitir el inicio de sesión de usuarios registrados. |
+| RF3 | El sistema debe generar rutinas de ejercicio personalizadas según el perfil del usuario. |
+| RF4 | El sistema debe brindar recomendaciones alimenticias basadas en los objetivos del usuario (incluyendo consumo de proteínas y calorías). |
+| RF5 | El sistema debe permitir la gestión de planes de pago para acceder a funciones premium. |
 
-**⚠️ Importante**: Nunca subir `.env` a Git
+### Requerimientos No Funcionales (RNF)
 
-## 🧪 Testing
-
-### Backend
-```bash
-cd back
-python manage.py test
-```
-
-### Frontend
-```bash
-cd front
-npm test
-```
-
-## 📚 Documentación
-
-- [Frontend - Angular](./front/README.md)
-- [Backend - Django](./back/README.md)
-- [Guía de Instalación](./INSTALL.md)
+| N° | Descripción |
+|----|-------------|
+| RNF1 | El sistema debe contar con una interfaz amigable e intuitiva, accesible para usuarios sin conocimientos técnicos. |
+| RNF2 | El sistema debe garantizar la seguridad y confidencialidad de los datos personales de los usuarios. |
+| RNF3 | El sistema debe tener un buen rendimiento, respondiendo las solicitudes en tiempos aceptables bajo carga normal. |
 
 ## 🎯 Próximos Pasos
 
 - [ ] Implementar autenticación JWT
-- [ ] Agregar más modelos de datos
+- [ ] Agregar modelos de rutinas y planes alimenticios
 - [ ] Crear interfaces de usuario avanzadas
 - [ ] Implementar tests automatizados
 - [ ] Configurar CI/CD
 - [ ] Desplegar a producción
 
 ## 👥 Desarrollo
-
-El proyecto está estructurado para ser fácil de mantener y escalar.
 
 ### Agregar Nuevos Endpoints
 
@@ -145,10 +165,6 @@ El proyecto está estructurado para ser fácil de mantener y escalar.
 - Escribir tests para nuevas características
 - Documentar cambios importantes
 - Usar variables de entorno para configuración sensible
-
-## 📝 Licencia
-
-Este proyecto es de código abierto. 
 
 ## 📧 Contacto
 
