@@ -6,45 +6,44 @@
     <button
       class="navbar-toggler"
       type="button"
-      data-bs-toggle="collapse"
-      data-bs-target="#navbarNav"
+      (click)="toggleMenu()"
       aria-controls="navbarNav"
-      aria-expanded="false"
+      [attr.aria-expanded]="menuOpen()"
       aria-label="Toggle navigation"
     >
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav" [class.show]="menuOpen()">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" routerLink="/">Inicio</a>
+          <a class="nav-link" routerLink="/" (click)="closeMenu()">Inicio</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/planes">Planes</a>
+          <a class="nav-link" routerLink="/planes" (click)="closeMenu()">Planes</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" routerLink="/quienes-somos">Quiénes somos</a>
+          <a class="nav-link" routerLink="/quienes-somos" (click)="closeMenu()">Quiénes somos</a>
         </li>
 
         @if (isLoggedIn()) {
           <li class="nav-item">
-            <a class="nav-link" routerLink="/dashboard">Dashboard</a>
+            <a class="nav-link" routerLink="/dashboard" (click)="closeMenu()">Dashboard</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" routerLink="/perfil">Perfil</a>
+            <a class="nav-link" routerLink="/perfil" (click)="closeMenu()">Perfil</a>
           </li>
           <li class="nav-item nav-user">
             <span class="nav-user-name">{{ usuario()?.nombre }}</span>
           </li>
           <li class="nav-item ms-2">
-            <button class="nav-link nav-logout" (click)="logout()">Cerrar sesión</button>
+            <button class="nav-link nav-logout" (click)="logout(); closeMenu()">Cerrar sesión</button>
           </li>
         } @else {
           <li class="nav-item ms-2">
-            <a class="nav-link" routerLink="/login">Iniciar sesión</a>
+            <a class="nav-link" routerLink="/login" (click)="closeMenu()">Iniciar sesión</a>
           </li>
           <li class="nav-item ms-2">
-            <a class="nav-link nav-cta" routerLink="/registro">Comenzar gratis</a>
+            <a class="nav-link nav-cta" routerLink="/registro" (click)="closeMenu()">Comenzar gratis</a>
           </li>
         }
       </ul>

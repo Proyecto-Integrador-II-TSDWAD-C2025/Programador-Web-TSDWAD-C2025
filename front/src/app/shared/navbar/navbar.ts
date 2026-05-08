@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ChangeDetectionStrategy } from '@angular/core';
@@ -16,6 +16,15 @@ export class Navbar {
 
   usuario = this.authService.usuario;
   isLoggedIn = this.authService.isLoggedIn;
+  menuOpen = signal(false);
+
+  toggleMenu() {
+    this.menuOpen.update(v => !v);
+  }
+
+  closeMenu() {
+    this.menuOpen.set(false);
+  }
 
   logout() {
     this.authService.logout();
