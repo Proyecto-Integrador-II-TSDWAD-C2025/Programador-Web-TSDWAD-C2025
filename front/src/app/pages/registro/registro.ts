@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
 @Component({
-  selector: 'app-home',
+  selector: 'app-registro',
   imports: [RouterLink],
-  templateUrl: './home.html',
-  styleUrl: './home.css',
+  templateUrl: './registro.html',
+  styleUrl: './registro.css',
 })
-export class Home {
+export class Registro {
 
 }
