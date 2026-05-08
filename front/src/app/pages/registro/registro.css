@@ -88,23 +88,80 @@
   box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
 }
 
+.form-group select {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid rgba(45, 122, 58, 0.25);
+  outline: none;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #333;
+}
+
+.form-group select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
+}
+
+.form-group input.is-invalid,
+.form-group select.is-invalid {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.form-group small.text-danger {
+  color: #b91c1c;
+  font-size: 0.82rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+
+.registro-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .btn-registro {
   display: block;
   text-align: center;
   background-color: var(--color-primary);
   color: #fff;
-  text-decoration: none;
+  border: none;
   padding: 13px 18px;
   border-radius: 50px;
   font-weight: 800;
   transition: all 0.3s ease;
   margin-top: 8px;
+  cursor: pointer;
 }
 
-.btn-registro:hover {
+.btn-registro:hover:not(:disabled) {
   background-color: var(--color-primary-mid);
   color: #fff;
   transform: translateY(-2px);
+}
+
+.btn-registro:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-login {
+  background-color: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-top: 12px;
 }
 
 .login-text {

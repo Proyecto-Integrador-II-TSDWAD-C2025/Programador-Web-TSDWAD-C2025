@@ -1,39 +1,47 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { ChangeDetectionStrategy } from '@angular/core';
+
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, ReactiveFormsModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
-  email = '';
-  password = '';
-  mensajeError = '';
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  constructor(private router: Router) {}
+  mensajeError = signal('');
+  cargando = signal(false);
+
+  loginForm = new FormGroup({
+    email: new FormControl('', [Validators.required, Validators.email]),
+    contrasena: new FormControl('', [Validators.required]),
+  });
 
   iniciarSesion() {
-    if (this.email === 'cliente@nutriapp.com' && this.password === 'cliente123') {
-      localStorage.setItem('rol', 'cliente');
-      this.router.navigate(['/dashboard']);
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       return;
     }
 
-    if (this.email === 'nutricionista@nutriapp.com' && this.password === 'nutri123') {
-      localStorage.setItem('rol', 'nutricionista');
-      this.router.navigate(['/dashboard']);
-      return;
-    }
+    this.cargando.set(true);
+    this.mensajeError.set('');
 
-    if (this.email === 'admin@nutriapp.com' && this.password === 'admin123') {
-      localStorage.setItem('rol', 'admin');
-      this.router.navigate(['/dashboard']);
-      return;
-    }
+    const { email, contrasena } = this.loginForm.value;
 
-    this.mensajeError = 'Correo o contraseña incorrectos.';
+    this.authService.login({ email: email!, contrasena: contrasena! }).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.cargando.set(false);
+        this.mensajeError.set(err.error?.error ?? 'Error al iniciar sesión. Verificá tus credenciales.');
+      }
+    });
   }
 }
-

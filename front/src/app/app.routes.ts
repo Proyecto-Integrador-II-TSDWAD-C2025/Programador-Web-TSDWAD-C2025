@@ -1,19 +1,12 @@
 import { Routes } from '@angular/router';
-import { Home } from './pages/home/home';
-import { DashboardComponent } from './pages/dashboard/dashboard';
-import { QuienesSomosComponent } from './pages/quienes-somos/quienes-somos';
-import { Login } from './pages/login/login';
-import { Registro } from './pages/registro/registro';
-import { Perfil } from './pages/perfil/perfil';
-import { Planes } from './pages/planes/planes';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', component: Home },
-  {path: 'dashboard', component: DashboardComponent },
-  { path: 'quienes-somos', component: QuienesSomosComponent },
-  { path: 'login', component: Login },
-  { path: 'registro', component: Registro },
-  { path: 'perfil', component: Perfil },
-  { path: 'planes', component: Planes },
+  { path: '', loadComponent: () => import('./pages/home/home').then(m => m.Home) },
+  { path: 'quienes-somos', loadComponent: () => import('./pages/quienes-somos/quienes-somos').then(m => m.QuienesSomosComponent) },
+  { path: 'login', loadComponent: () => import('./pages/login/login').then(m => m.Login) },
+  { path: 'registro', loadComponent: () => import('./pages/registro/registro').then(m => m.Registro) },
+  { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent), canActivate: [authGuard] },
+  { path: 'perfil', loadComponent: () => import('./pages/perfil/perfil').then(m => m.Perfil), canActivate: [authGuard] },
+  { path: 'planes', loadComponent: () => import('./pages/planes/planes').then(m => m.Planes), canActivate: [authGuard] },
 ];
-
