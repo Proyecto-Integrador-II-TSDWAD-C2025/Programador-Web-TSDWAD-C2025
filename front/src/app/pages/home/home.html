@@ -1,0 +1,105 @@
+<!-- Hero Section -->
+<section class="hero-section" id="home">
+  <div class="hero-overlay"></div>
+  <div class="container hero-content">
+    <div class="row align-items-center min-vh-100 pt-5">
+      <div class="col-lg-6 hero-text animate-fade-in">
+        <span class="hero-badge">{{ badge }}</span>
+        <h1>{{ tituloLinea1 }}<br><span class="text-highlight">{{ tituloDestacado }}</span> {{ tituloLinea2 }}</h1>
+        <p>{{ descripcion }}</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a routerLink="/registro" class="btn hero-btn">{{ btnPrimario }}</a>
+          <a routerLink="/planes" class="btn hero-btn hero-btn-secondary">{{ btnSecundario }}</a>
+        </div>
+        <div class="hero-stats mt-5">
+          @for (stat of stats; track stat.numero) {
+            <div class="stat">
+              <span class="stat-num">{{ stat.numero }}</span>
+              <span class="stat-label">{{ stat.label }}</span>
+            </div>
+            @if (!$last) {
+              <div class="stat-divider"></div>
+            }
+          }
+        </div>
+      </div>
+      <div class="col-lg-6 text-center animate-fade-in-delay">
+        <div class="hero-img-wrapper">
+          <img [src]="heroImg" [alt]="heroImgAlt" class="hero-img" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <span class="section-tag">{{ sectionTag }}</span>
+      <h2>{{ sectionTitulo }}</h2>
+    </div>
+    <div class="row g-4">
+      @for (feature of features; track feature.titulo) {
+        <div class="col-md-6 col-lg-4">
+          <div class="feature-card">
+            <div class="feature-icon-wrap">
+              <div class="feature-icon">{{ feature.icono }}</div>
+            </div>
+            <h5>{{ feature.titulo }}</h5>
+            <p>{{ feature.descripcion }}</p>
+            <span class="card-arrow">→</span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- About Section -->
+<section id="about" class="about-section">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <div class="about-img-wrapper">
+          <img [src]="aboutImg" [alt]="aboutImgAlt" class="about-img" />
+          <div class="about-badge-float">
+            <span style="font-size: 1.5rem;">🏆</span>
+            <div>
+              <p class="float-title">Resultados reales</p>
+              <p class="float-sub">Basado en tu perfil</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <span class="section-tag">{{ aboutTag }}</span>
+        <h2 style="font-size: 2.5rem; font-weight: 700; margin: 1rem 0 1.5rem; color: #1a1a2e;">
+          {{ aboutTitulo }}
+        </h2>
+        <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 1rem">
+          {{ aboutTexto1 }}
+        </p>
+        <p style="font-size: 1.1rem; line-height: 1.8; color: #555; margin-bottom: 2rem">
+          {{ aboutTexto2 }}
+        </p>
+        <div class="about-chips">
+          @for (chip of aboutChips; track chip) {
+            <span class="chip">{{ chip }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section" id="contact">
+  <div class="cta-overlay"></div>
+  <div class="container cta-content text-center">
+    <span class="section-tag" style="background: rgba(255,255,255,0.15); color: #fff;">{{ ctaTag }}</span>
+    <h2>{{ ctaTitulo }}</h2>
+    <p>{{ ctaDescripcion }}</p>
+    <button class="btn cta-btn">{{ ctaBtn }}</button>
+  </div>
+</section>

@@ -1,28 +1,84 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Usuario
-from .serializers import UsuarioSerializer
+from django.db import connection
+
+from .models import Rol, Usuario, Plan, Comida, UsuarioPlan, PlanComida
+from .serializers import (
+    RolSerializer,
+    UsuarioSerializer, UsuarioReadSerializer,
+    PlanSerializer,
+    ComidaSerializer,
+    UsuarioPlanSerializer, UsuarioPlanReadSerializer,
+    PlanComidaSerializer, PlanComidaReadSerializer,
+)
+
+
+class RolViewSet(viewsets.ModelViewSet):
+    queryset = Rol.objects.all()
+    serializer_class = RolSerializer
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    """ViewSet para gestionar Usuarios"""
-    queryset = Usuario.objects.all()
+    queryset = Usuario.objects.select_related('id_rol').all()
     serializer_class = UsuarioSerializer
-    
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return UsuarioReadSerializer
+        return UsuarioSerializer
+
     @action(detail=False, methods=['get'])
     def test(self, request):
-        """Endpoint de prueba para evaluar la conexión con la base de datos"""
         try:
-            usuario_count = Usuario.objects.count()
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
             return Response({
                 'status': 'success',
                 'message': 'Conexión con la base de datos MySQL exitosa',
-                'usuarios_totales': usuario_count,
-                'info': 'ProyectoIntegrador - Backend API'
+                'info': 'NutriApp - Backend API',
             }, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PlanViewSet(viewsets.ModelViewSet):
+    queryset = Plan.objects.all()
+    serializer_class = PlanSerializer
+
+
+class ComidaViewSet(viewsets.ModelViewSet):
+    queryset = Comida.objects.all()
+    serializer_class = ComidaSerializer
+
+
+class UsuarioPlanViewSet(viewsets.ModelViewSet):
+    queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').all()
+    serializer_class = UsuarioPlanSerializer
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return UsuarioPlanReadSerializer
+        return UsuarioPlanSerializer
+
+    @action(detail=False, methods=['get'], url_path='por-usuario/(?P<usuario_id>[^/.]+)')
+    def por_usuario(self, request, usuario_id=None):
+        planes = self.queryset.filter(id_usuario=usuario_id)
+        serializer = UsuarioPlanReadSerializer(planes, many=True)
+        return Response(serializer.data)
+
+
+class PlanComidaViewSet(viewsets.ModelViewSet):
+    queryset = PlanComida.objects.select_related('id_plan', 'id_comida').all()
+    serializer_class = PlanComidaSerializer
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return PlanComidaReadSerializer
+        return PlanComidaSerializer
+
+    @action(detail=False, methods=['get'], url_path='por-plan/(?P<plan_id>[^/.]+)')
+    def por_plan(self, request, plan_id=None):
+        comidas = self.queryset.filter(id_plan=plan_id)
+        serializer = PlanComidaReadSerializer(comidas, many=True)
+        return Response(serializer.data)
