@@ -7,6 +7,7 @@ def seed_roles_and_admin(apps, schema_editor):
 
     rol_admin, _ = Rol.objects.get_or_create(nombre_rol='administrador')
     Rol.objects.get_or_create(nombre_rol='usuario')
+    Rol.objects.get_or_create(nombre_rol='nutricionista')
 
     Usuario.objects.get_or_create(
         email='admin@nutriapp.com',
@@ -24,7 +25,7 @@ def reverse_seed(apps, schema_editor):
     Rol = apps.get_model('api', 'Rol')
 
     Usuario.objects.filter(email='admin@nutriapp.com').delete()
-    Rol.objects.filter(nombre_rol__in=['administrador', 'usuario']).delete()
+    Rol.objects.filter(nombre_rol__in=['administrador', 'usuario', 'nutricionista']).delete()
 
 
 class Migration(migrations.Migration):
