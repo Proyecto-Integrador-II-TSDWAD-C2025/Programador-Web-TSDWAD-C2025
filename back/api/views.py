@@ -1,5 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.db import connection
 
@@ -14,14 +16,41 @@ from .serializers import (
 )
 
 
+class LoginView(GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UsuarioReadSerializer
+
+    def post(self, request):
+        email = request.data.get('email')
+        contrasena = request.data.get('contrasena')
+
+        if not email or not contrasena:
+            return Response(
+                {'error': 'Email y contraseña son requeridos'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            usuario = Usuario.objects.select_related('id_rol').get(email=email, contrasena=contrasena)
+            serializer = UsuarioReadSerializer(usuario)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Usuario.DoesNotExist:
+            return Response(
+                {'error': 'Credenciales inválidas'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.all()
     serializer_class = RolSerializer
+    permission_classes = [AllowAny]
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.select_related('id_rol').all()
     serializer_class = UsuarioSerializer
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -45,16 +74,19 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.all()
     serializer_class = PlanSerializer
+    permission_classes = [AllowAny]
 
 
 class ComidaViewSet(viewsets.ModelViewSet):
     queryset = Comida.objects.all()
     serializer_class = ComidaSerializer
+    permission_classes = [AllowAny]
 
 
 class UsuarioPlanViewSet(viewsets.ModelViewSet):
     queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').all()
     serializer_class = UsuarioPlanSerializer
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -71,6 +103,7 @@ class UsuarioPlanViewSet(viewsets.ModelViewSet):
 class PlanComidaViewSet(viewsets.ModelViewSet):
     queryset = PlanComida.objects.select_related('id_plan', 'id_comida').all()
     serializer_class = PlanComidaSerializer
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:

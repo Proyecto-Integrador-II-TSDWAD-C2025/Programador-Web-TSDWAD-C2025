@@ -1,0 +1,27 @@
+.nav-user {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.nav-user-name {
+  color: var(--color-primary-light) !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.nav-logout {
+  background: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  border-radius: 50px !important;
+  padding: 0.35rem 1rem !important;
+  font-size: 0.88rem !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-logout:hover {
+  border-color: rgba(220, 38, 38, 0.6) !important;
+  color: #fca5a5 !important;
+}

@@ -93,3 +93,6 @@ CREATE TABLE IF NOT EXISTS PLAN_COMIDA (
 INSERT INTO ROL (nombre_rol) VALUES
     ('administrador'),
     ('usuario');
+
+INSERT INTO USUARIO (nombre, apellido, email, contrasena, fecha_registro, id_rol)
+VALUES ('Admin', 'Sistema', 'admin@nutriapp.com', 'admin123', NOW(), 1);
