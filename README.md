@@ -129,9 +129,9 @@ python manage.py createsuperuser
 
 | N° | Descripción |
 |----|-------------|
-| RF1 | El sistema debe permitir el registro de nuevos usuarios. |
-| RF2 | El sistema debe permitir el inicio de sesión de usuarios registrados. |
-| RF3 | El sistema debe generar rutinas de ejercicio personalizadas según el perfil del usuario. |
+| RF1 | El sistema debe permitir que un nuevo usuario complete un formulario de registro ingresando nombre, correo electrónico y contraseña; al finalizar, el sistema debe crear la cuenta y redirigir al usuario a la configuración de su perfil. |
+| RF2 | El sistema debe permitir que un usuario registrado inicie sesión con su correo y contraseña; si las credenciales son correctas, el sistema debe mostrar su panel personalizado; si son incorrectas, debe mostrar un mensaje de error descriptivo. |
+| RF3 | El sistema debe permitir que el usuario cree y edite su perfil ingresando datos como edad, peso, altura, nivel de actividad física y objetivos (ej.: perder peso, ganar masa muscular); el sistema debe actualizar las recomendaciones según los cambios guardados. |
 | RF4 | El sistema debe brindar recomendaciones alimenticias basadas en los objetivos del usuario (incluyendo consumo de proteínas y calorías). |
 | RF5 | El sistema debe permitir la gestión de planes de pago para acceder a funciones premium. |
 
@@ -168,7 +168,7 @@ python manage.py createsuperuser
 
 ## 📧 Contacto
 
-Para preguntas o sugerencias, contactar al equipo de desarrollo.
+Para preguntas o sugerencias, contactar al equipo de desarrollo TERACODE.
 
 ---
 
