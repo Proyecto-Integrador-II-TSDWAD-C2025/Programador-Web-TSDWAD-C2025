@@ -1,0 +1,72 @@
+<section class="about-page">
+  <div class="about-hero">
+    <span class="about-badge">Quiénes somos</span>
+
+    <h1>NutriApp: bienestar, nutrición y entrenamiento en un solo lugar</h1>
+
+    <p>
+      NutriApp es una aplicación web pensada para acompañar a las personas que
+      quieren mejorar sus hábitos de alimentación y actividad física de una forma
+      simple, ordenada y personalizada.
+    </p>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <h2>Nuestra misión</h2>
+      <p>
+        Brindar una herramienta digital accesible que permita organizar la
+        alimentación, consultar rutinas de ejercicio y realizar un seguimiento
+        del progreso personal.
+      </p>
+    </div>
+
+    <div class="about-card">
+      <h2>Nuestra visión</h2>
+      <p>
+        Convertirnos en una plataforma integral de bienestar, capaz de conectar a
+        los usuarios con recursos personalizados y acompañamiento profesional.
+      </p>
+    </div>
+
+    <div class="about-card">
+      <h2>Nuestro propósito</h2>
+      <p>
+        Facilitar el acceso a información clara y útil para que cada persona
+        pueda construir hábitos saludables de manera sostenible.
+      </p>
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>¿Qué ofrecemos?</h2>
+
+    <p>
+      Nuestra propuesta combina nutrición, entrenamiento y seguimiento personal
+      dentro de una misma plataforma, evitando que el usuario tenga que buscar
+      información dispersa en distintos sitios o aplicaciones.
+    </p>
+
+    <div class="services-grid">
+      @for (servicio of servicios; track servicio.titulo) {
+        <div class="service-card">
+          <h3>{{ servicio.titulo }}</h3>
+          <p>{{ servicio.descripcion }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="about-section">
+    <h2>Beneficios de usar NutriApp</h2>
+
+    <div class="benefits-grid">
+      @for (beneficio of beneficios; track beneficio.titulo) {
+        <div class="benefit-card">
+          <h3>{{ beneficio.titulo }}</h3>
+          <p>{{ beneficio.descripcion }}</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>
