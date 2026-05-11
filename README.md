@@ -170,6 +170,17 @@ python manage.py createsuperuser
 
 Para preguntas o sugerencias, contactar al equipo de desarrollo TERACODE.
 
+Equipo TERACODE
+
+| Integrante | Rol |
+|---|---|
+| Andreoli, Fernando | Developer|
+| Acosta, Johana | Developer|
+| Fernandez, Ariel | Developer |
+| Nieto, Tomas |  Developer |
+| Rodas, Ma. Catalina | Developer |
+| Romero, Pablo | Scrum Master|
+
 ---
 
 **Última actualización**: Abril 2026  
