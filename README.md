@@ -139,7 +139,7 @@ python manage.py createsuperuser
 
 | N° | Descripción |
 |----|-------------|
-| RNF1 |El sistema debe responder a las solicitudes del usuario en tiempos aceptables bajo carga normal.  |
+| RNF1 |El sistema debe responder a las solicitudes del usuario en tiempos aceptables bajo carga normal. |
 | RNF2 | El sistema debe proteger los datos personales mediante cifrado y buenas prácticas de gestión de contraseñas. |
 | RNF3 | La interfaz debe ser intuitiva y accesible para usuarios sin conocimientos técnicos.|
 
