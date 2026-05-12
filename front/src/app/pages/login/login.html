@@ -1,0 +1,58 @@
+<section class="login-page">
+  <div class="login-card">
+    <span class="login-badge">Acceso a NutriApp</span>
+
+    <h1>Iniciar sesión</h1>
+
+    <p class="login-description">
+      Ingresá con tu cuenta para acceder a tu panel personalizado según tu perfil.
+    </p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="iniciarSesion()" class="login-form">
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="Ej: usuario@email.com"
+          [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+        />
+        @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+          <small class="text-danger">Ingresá un correo electrónico válido</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="contrasena"
+          placeholder="Ingresá tu contraseña"
+          [class.is-invalid]="loginForm.get('contrasena')?.invalid && loginForm.get('contrasena')?.touched"
+        />
+        @if (loginForm.get('contrasena')?.invalid && loginForm.get('contrasena')?.touched) {
+          <small class="text-danger">La contraseña es requerida</small>
+        }
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="cargando()">
+        @if (cargando()) {
+          Iniciando sesión...
+        } @else {
+          Iniciar sesión
+        }
+      </button>
+
+      @if (mensajeError()) {
+        <p class="error-login">{{ mensajeError() }}</p>
+      }
+    </form>
+
+    <p class="registro-text">
+      ¿No tenés cuenta?
+      <a routerLink="/registro">Crear cuenta</a>
+    </p>
+  </div>
+</section>

@@ -129,9 +129,9 @@ python manage.py createsuperuser
 
 | N° | Descripción |
 |----|-------------|
-| RF1 | El sistema debe permitir el registro de nuevos usuarios. |
-| RF2 | El sistema debe permitir el inicio de sesión de usuarios registrados. |
-| RF3 | El sistema debe generar rutinas de ejercicio personalizadas según el perfil del usuario. |
+| RF1 | El sistema debe permitir que un nuevo usuario complete un formulario de registro ingresando nombre, correo electrónico y contraseña; al finalizar, el sistema debe crear la cuenta y redirigir al usuario a la configuración de su perfil. |
+| RF2 | El sistema debe permitir que un usuario registrado inicie sesión con su correo y contraseña; si las credenciales son correctas, el sistema debe mostrar su panel personalizado; si son incorrectas, debe mostrar un mensaje de error descriptivo. |
+| RF3 | El sistema debe permitir que el usuario cree y edite su perfil ingresando datos como edad, peso, altura, nivel de actividad física y objetivos (ej.: perder peso, ganar masa muscular); el sistema debe actualizar las recomendaciones según los cambios guardados. |
 | RF4 | El sistema debe brindar recomendaciones alimenticias basadas en los objetivos del usuario (incluyendo consumo de proteínas y calorías). |
 | RF5 | El sistema debe permitir la gestión de planes de pago para acceder a funciones premium. |
 
@@ -139,9 +139,9 @@ python manage.py createsuperuser
 
 | N° | Descripción |
 |----|-------------|
-| RNF1 | El sistema debe contar con una interfaz amigable e intuitiva, accesible para usuarios sin conocimientos técnicos. |
-| RNF2 | El sistema debe garantizar la seguridad y confidencialidad de los datos personales de los usuarios. |
-| RNF3 | El sistema debe tener un buen rendimiento, respondiendo las solicitudes en tiempos aceptables bajo carga normal. |
+| RNF1 |El sistema debe responder a las solicitudes del usuario en tiempos aceptables bajo carga normal. |
+| RNF2 | El sistema debe proteger los datos personales mediante cifrado y buenas prácticas de gestión de contraseñas. |
+| RNF3 | La interfaz debe ser intuitiva y accesible para usuarios sin conocimientos técnicos.|
 
 ## 🎯 Próximos Pasos
 
@@ -168,7 +168,18 @@ python manage.py createsuperuser
 
 ## 📧 Contacto
 
-Para preguntas o sugerencias, contactar al equipo de desarrollo.
+Para preguntas o sugerencias, contactar al equipo de desarrollo TERACODE.
+
+Equipo TERACODE
+
+| Integrante | Rol |
+|---|---|
+| Andreoli, Fernando | Developer|
+| Acosta, Johana | Developer|
+| Fernandez, Ariel | Developer |
+| Nieto, Tomas |  Developer |
+| Rodas, Ma. Catalina | Developer |
+| Romero, Pablo | Scrum Master|
 
 ---
 

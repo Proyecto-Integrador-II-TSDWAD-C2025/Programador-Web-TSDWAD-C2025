@@ -1,0 +1,181 @@
+.dashboard-container {
+  position: relative;
+  padding: 120px 46px 40px;
+  min-height: 100vh;
+  color: #fff;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    rgba(26, 26, 46, 0.96) 0%,
+    rgba(15, 45, 24, 0.92) 55%,
+    rgba(45, 122, 58, 0.88) 100%
+  );
+}
+
+/* Imagen de fondo tenue, parecida al Home */
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1400&auto=format&fit=crop&q=60')
+    center/cover no-repeat;
+  opacity: 0.13;
+  z-index: 0;
+}
+
+/* Capa de color y difuminado */
+.dashboard-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(85, 201, 102, 0.25), transparent 28%),
+    radial-gradient(circle at 85% 35%, rgba(61, 163, 77, 0.18), transparent 32%),
+    linear-gradient(135deg, rgba(26, 26, 46, 0.72), rgba(45, 122, 58, 0.42));
+  z-index: 0;
+}
+
+/* Hace que el contenido quede por encima del fondo */
+.dashboard-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Header del dashboard */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  gap: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.dashboard-header p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Botón para probar cambio de rol */
+.btn-rol {
+  background-color: var(--color-primary-light);
+  color: var(--color-dark);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.btn-rol:hover {
+  background-color: #fff;
+  color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+/* Secciones */
+.dashboard-section h2 {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.4px;
+}
+
+/* Grillas de cards */
+.cards-resumen,
+.cards-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 24px;
+  margin-bottom: 44px;
+}
+
+/* Cards */
+.card {
+  background-color: rgba(255, 255, 255, 0.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 26px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+}
+
+.card h3 {
+  color: var(--color-dark);
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.card p {
+  color: #4d5a52;
+  line-height: 1.5;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Botones dentro de cards */
+.opcion button {
+  margin-top: 22px;
+  background-color: var(--color-primary);
+  color: #fff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 800;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.opcion button:hover {
+  background-color: var(--color-primary-mid);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 110px 20px 30px;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.9rem;
+  }
+
+  .dashboard-section h2 {
+    font-size: 1.6rem;
+  }
+
+  .btn-rol {
+    width: 100%;
+  }
+
+  .cards-resumen,
+  .cards-opciones {
+    grid-template-columns: 1fr;
+  }
+}

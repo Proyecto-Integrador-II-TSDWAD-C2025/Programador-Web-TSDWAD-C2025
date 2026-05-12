@@ -1,0 +1,131 @@
+<section class="dashboard-container">
+  <div class="dashboard-header">
+    <div>
+      <span class="dashboard-badge">Panel personalizado</span>
+      <h1>Mi espacio en NutriApp</h1>
+      @if (usuario()) {
+        <p>Bienvenido, {{ usuario()!.nombre }} {{ usuario()!.apellido }}</p>
+      }
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <div class="loading">
+      <p>Cargando datos...</p>
+    </div>
+  }
+
+  @if (!cargando()) {
+    @if (rol === 'usuario') {
+      <div class="dashboard-section">
+        <h2>Bienvenido, {{ firstName() }}</h2>
+
+        <div class="cards-resumen">
+          <div class="card">
+            <h3>Objetivo físico</h3>
+            <p>Mejorar mi salud</p>
+          </div>
+
+          <div class="card">
+            <h3>Plan actual</h3>
+            @if (misPlanes().length > 0) {
+              <p>{{ misPlanes()[0].id_plan }}</p>
+            } @else {
+              <p>Sin plan asignado</p>
+            }
+          </div>
+
+          <div class="card">
+            <h3>Planes disponibles</h3>
+            <p>{{ planes().length }} planes</p>
+          </div>
+
+          <div class="card">
+            <h3>Rol</h3>
+            <p>{{ usuario()?.id_rol?.nombre_rol ?? 'cliente' }}</p>
+          </div>
+        </div>
+
+        <h2>Accesos rápidos del cliente</h2>
+
+        <div class="cards-opciones">
+          @for (opcion of opcionesCliente; track opcion.titulo) {
+            <div class="card opcion">
+              <h3>{{ opcion.titulo }}</h3>
+              <p>{{ opcion.descripcion }}</p>
+              <button>Ver más</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (rol === 'nutricionista') {
+      <div class="dashboard-section">
+        <h2>Panel del nutricionista</h2>
+
+        <div class="cards-resumen">
+          <div class="card">
+            <h3>Profesional</h3>
+            <p>{{ usuario()?.nombre }} {{ usuario()?.apellido }}</p>
+          </div>
+
+          <div class="card">
+            <h3>Planes disponibles</h3>
+            <p>{{ planes().length }} planes cargados</p>
+          </div>
+
+          <div class="card">
+            <h3>Mis planes asignados</h3>
+            <p>{{ misPlanes().length }} planes</p>
+          </div>
+        </div>
+
+        <h2>Accesos rápidos del nutricionista</h2>
+
+        <div class="cards-opciones">
+          @for (opcion of opcionesNutricionista; track opcion.titulo) {
+            <div class="card opcion">
+              <h3>{{ opcion.titulo }}</h3>
+              <p>{{ opcion.descripcion }}</p>
+              <button>Gestionar</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (rol === 'administrador') {
+      <div class="dashboard-section">
+        <h2>Panel de administración</h2>
+        <p class="section-description">
+          Desde esta vista se pueden gestionar los datos principales de NutriApp.
+        </p>
+
+        <div class="cards-resumen">
+          <div class="card">
+            <h3>Admin</h3>
+            <p>{{ usuario()?.nombre }} {{ usuario()?.apellido }}</p>
+          </div>
+
+          <div class="card">
+            <h3>Planes disponibles</h3>
+            <p>{{ planes().length }} planes</p>
+          </div>
+        </div>
+
+        <h2>Accesos rápidos del administrador</h2>
+
+        <div class="cards-opciones">
+          @for (opcion of opcionesAdmin; track opcion.titulo) {
+            <div class="card opcion">
+              <h3>{{ opcion.titulo }}</h3>
+              <p>{{ opcion.descripcion }}</p>
+              <button>Gestionar</button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</section>

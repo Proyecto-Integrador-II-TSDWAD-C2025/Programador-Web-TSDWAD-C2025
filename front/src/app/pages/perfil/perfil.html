@@ -1,0 +1,83 @@
+<section class="perfil-page">
+  <div class="perfil-card">
+    @if (usuario(); as user) {
+      <span class="perfil-badge">Perfil de {{ user.id_rol.nombre_rol }}</span>
+    } @else {
+      <span class="perfil-badge">Perfil</span>
+    }
+
+    <h1>Completá tu perfil</h1>
+
+    <p class="perfil-description">
+      Estos datos nos ayudan a personalizar tus rutinas, recomendaciones alimenticias y objetivos dentro de NutriApp.
+    </p>
+
+    @if (mensajeExito()) {
+      <div class="exito-message">
+        Perfil guardado exitosamente.
+      </div>
+    }
+
+    <form [formGroup]="perfilForm" (ngSubmit)="guardar()" class="perfil-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="edad">Edad</label>
+          <input id="edad" type="number" formControlName="edad" placeholder="Ej: 18">
+        </div>
+
+        <div class="form-group">
+          <label for="pesoActual">Peso actual</label>
+          <input id="pesoActual" type="number" formControlName="pesoActual" placeholder="Ej: 70 kg">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="altura">Altura</label>
+          <input id="altura" type="number" formControlName="altura" placeholder="Ej: 175 cm">
+        </div>
+
+        <div class="form-group">
+          <label for="pesoObjetivo">Peso objetivo</label>
+          <input id="pesoObjetivo" type="number" formControlName="pesoObjetivo" placeholder="Ej: 65 kg">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="objetivo">Objetivo físico</label>
+        <select id="objetivo" formControlName="objetivo">
+          <option value="">Seleccioná tu objetivo</option>
+          <option value="bajar-grasa">Bajar grasa corporal</option>
+          <option value="aumentar-masa">Aumentar masa muscular</option>
+          <option value="mantener-peso">Mantener peso</option>
+          <option value="mejorar-habitos">Mejorar hábitos saludables</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="actividad">Nivel de actividad</label>
+        <select id="actividad" formControlName="actividad">
+          <option value="">Seleccioná tu nivel</option>
+          <option value="bajo">Bajo</option>
+          <option value="moderado">Moderado</option>
+          <option value="alto">Alto</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="preferencia">Preferencia alimenticia</label>
+        <select id="preferencia" formControlName="preferencia">
+          <option value="">Seleccioná una opción</option>
+          <option value="sin-preferencia">Sin preferencia</option>
+          <option value="vegetariana">Vegetariana</option>
+          <option value="alta-proteina">Alta en proteínas</option>
+          <option value="baja-calorias">Baja en calorías</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn-perfil">
+        Guardar perfil
+      </button>
+    </form>
+  </div>
+</section>
