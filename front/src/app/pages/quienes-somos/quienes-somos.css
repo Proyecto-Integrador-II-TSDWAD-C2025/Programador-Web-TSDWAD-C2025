@@ -38,6 +38,8 @@
   z-index: 1;
 }
 
+/* HERO / PRESENTACIÓN */
+
 .about-hero {
   max-width: 920px;
   margin-bottom: 52px;
@@ -61,14 +63,17 @@
   margin-bottom: 18px;
   letter-spacing: -0.8px;
   line-height: 1.15;
+  color: #fff;
 }
 
 .about-hero p {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.82);
   font-size: 1.1rem;
   line-height: 1.7;
   max-width: 760px;
 }
+
+/* GRILLAS */
 
 .about-grid,
 .services-grid,
@@ -82,20 +87,18 @@
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
-.services-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  margin-top: 24px;
-}
-
+.services-grid,
 .benefits-grid {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   margin-top: 24px;
 }
 
+/* CARDS */
+
 .about-card,
 .service-card,
 .benefit-card {
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: rgba(255, 255, 255, 0.94);
   color: var(--color-dark);
   padding: 28px;
   border-radius: 22px;
@@ -127,21 +130,31 @@
   margin: 0;
 }
 
+/* SECCIONES INTERNAS */
+
 .about-section {
   margin-top: 30px;
+  background-color: var(--color-primary-pale);
+  padding: 36px;
+  border-radius: 24px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
 
 .about-section h2 {
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 14px;
+  color: var(--color-dark);
 }
 
 .about-section > p {
   max-width: 850px;
-  color: rgba(255, 255, 255, 0.78);
+  color: #4d5a52;
   line-height: 1.7;
+  margin-bottom: 0;
 }
+
+/* RESPONSIVE */
 
 @media (max-width: 768px) {
   .about-page {
@@ -150,6 +163,14 @@
 
   .about-hero h1 {
     font-size: 2.2rem;
+  }
+
+  .about-hero p {
+    font-size: 1rem;
+  }
+
+  .about-section {
+    padding: 26px 20px;
   }
 
   .about-section h2 {

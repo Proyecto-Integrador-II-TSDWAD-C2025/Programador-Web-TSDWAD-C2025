@@ -16,7 +16,7 @@
   }
 
   @if (!cargando()) {
-    @if (rol === 'cliente') {
+    @if (rol === 'usuario') {
       <div class="dashboard-section">
         <h2>Bienvenido, {{ firstName() }}</h2>
 
@@ -95,7 +95,7 @@
       </div>
     }
 
-    @if (rol === 'admin') {
+    @if (rol === 'administrador') {
       <div class="dashboard-section">
         <h2>Panel de administración</h2>
         <p class="section-description">
