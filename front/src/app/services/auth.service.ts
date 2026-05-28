@@ -1,9 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, switchMap } from 'rxjs';
+import { Observable, tap, switchMap, map } from 'rxjs';
 import { API_URL } from './api.config';
-import { UsuarioRead, LoginRequest, RegistroRequest } from '../models';
+import { UsuarioRead, LoginRequest, LoginResponse, RegistroRequest } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,24 +18,31 @@ export class AuthService {
 
   constructor() {
     const stored = localStorage.getItem('usuario');
-    if (stored) {
+    const token = localStorage.getItem('auth_token');
+    if (stored && token) {
       try {
         const user: UsuarioRead = JSON.parse(stored);
         this.currentUser.set(user);
         this.isAuthenticated_.set(true);
       } catch {
         localStorage.removeItem('usuario');
+        localStorage.removeItem('auth_token');
       }
+    } else {
+      localStorage.removeItem('usuario');
+      localStorage.removeItem('auth_token');
     }
   }
 
   login(credentials: LoginRequest): Observable<UsuarioRead> {
-    return this.http.post<UsuarioRead>(`${API_URL}/login/`, credentials).pipe(
-      tap((user) => {
-        this.currentUser.set(user);
+    return this.http.post<LoginResponse>(`${API_URL}/login/`, credentials).pipe(
+      tap((response) => {
+        this.currentUser.set(response.usuario);
         this.isAuthenticated_.set(true);
-        localStorage.setItem('usuario', JSON.stringify(user));
-      })
+        localStorage.setItem('usuario', JSON.stringify(response.usuario));
+        localStorage.setItem('auth_token', response.token);
+      }),
+      map((response) => response.usuario)
     );
   }
 
@@ -49,6 +56,7 @@ export class AuthService {
     this.currentUser.set(null);
     this.isAuthenticated_.set(false);
     localStorage.removeItem('usuario');
+    localStorage.removeItem('auth_token');
     this.router.navigate(['/login']);
   }
 

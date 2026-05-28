@@ -26,7 +26,7 @@ export class Registro implements OnInit {
     nombre: new FormControl('', [Validators.required]),
     apellido: new FormControl('', [Validators.required]),
     email: new FormControl('', [Validators.required, Validators.email]),
-    contrasena: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    contrasena: new FormControl('', [Validators.required, Validators.minLength(8)]),
     id_rol: new FormControl<number | null>(null, [Validators.required]),
   });
 

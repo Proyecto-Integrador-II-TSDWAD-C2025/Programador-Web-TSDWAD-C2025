@@ -1,70 +1,89 @@
-from rest_framework import viewsets, status
+from django.db import connection
+from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from django.db import connection
 
-from .models import Rol, Usuario, Plan, Comida, UsuarioPlan, PlanComida
+from .models import Comida, Plan, PlanComida, Rol, Usuario, UsuarioPlan
+from .permissions import (
+    IsAdminOrNutritionistRole,
+    IsAdminRole,
+    IsAuthenticatedReadOrStaffRoleWrite,
+    IsSelfOrAdminRole,
+    user_has_role,
+)
 from .serializers import (
-    RolSerializer,
-    UsuarioSerializer, UsuarioReadSerializer,
-    PlanSerializer,
     ComidaSerializer,
-    UsuarioPlanSerializer, UsuarioPlanReadSerializer,
-    PlanComidaSerializer, PlanComidaReadSerializer,
+    LoginSerializer,
+    PlanComidaReadSerializer,
+    PlanComidaSerializer,
+    PlanSerializer,
+    RolSerializer,
+    UsuarioPlanReadSerializer,
+    UsuarioPlanSerializer,
+    UsuarioReadSerializer,
+    UsuarioSerializer,
 )
 
 
 class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
-    serializer_class = UsuarioReadSerializer
+    serializer_class = LoginSerializer
 
     def post(self, request):
-        email = request.data.get('email')
-        contrasena = request.data.get('contrasena')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not email or not contrasena:
-            return Response(
-                {'error': 'Email y contraseña son requeridos'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        usuario = serializer.validated_data['usuario']
+        token, _ = Token.objects.get_or_create(user=usuario)
 
-        try:
-            usuario = Usuario.objects.select_related('id_rol').get(email=email, contrasena=contrasena)
-            serializer = UsuarioReadSerializer(usuario)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Usuario.DoesNotExist:
-            return Response(
-                {'error': 'Credenciales inválidas'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+        return Response({
+            'token': token.key,
+            'usuario': UsuarioReadSerializer(usuario).data,
+        }, status=status.HTTP_200_OK)
 
 
 class RolViewSet(viewsets.ModelViewSet):
-    queryset = Rol.objects.all()
+    queryset = Rol.objects.order_by('id_rol')
     serializer_class = RolSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+
+        return [IsAdminRole()]
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuario.objects.select_related('id_rol').all()
+    queryset = Usuario.objects.select_related('id_rol').order_by('id_usuario')
     serializer_class = UsuarioSerializer
-    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return UsuarioReadSerializer
+
         return UsuarioSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'test']:
+            return [AllowAny()]
+        if self.action in ['list', 'destroy']:
+            return [IsAdminRole()]
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsSelfOrAdminRole()]
+
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
     def test(self, request):
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
+                cursor.execute('SELECT 1')
             return Response({
                 'status': 'success',
-                'message': 'Conexión con la base de datos MySQL exitosa',
+                'message': 'Conexion con la base de datos MySQL exitosa',
                 'info': 'NutriApp - Backend API',
             }, status=status.HTTP_200_OK)
         except Exception as e:
@@ -72,42 +91,60 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 class PlanViewSet(viewsets.ModelViewSet):
-    queryset = Plan.objects.all()
+    queryset = Plan.objects.order_by('id_plan')
     serializer_class = PlanSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
 
 
 class ComidaViewSet(viewsets.ModelViewSet):
-    queryset = Comida.objects.all()
+    queryset = Comida.objects.order_by('id_comida')
     serializer_class = ComidaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
 
 
 class UsuarioPlanViewSet(viewsets.ModelViewSet):
-    queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').all()
+    queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').order_by('id_usuario_plan')
     serializer_class = UsuarioPlanSerializer
-    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if user_has_role(self.request.user, 'administrador', 'nutricionista'):
+            return queryset
+
+        return queryset.filter(id_usuario=self.request.user)
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return UsuarioPlanReadSerializer
+
         return UsuarioPlanSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrNutritionistRole()]
+
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'], url_path='por-usuario/(?P<usuario_id>[^/.]+)')
     def por_usuario(self, request, usuario_id=None):
-        planes = self.queryset.filter(id_usuario=usuario_id)
+        if not user_has_role(request.user, 'administrador', 'nutricionista'):
+            usuario_id = request.user.id_usuario
+
+        planes = self.get_queryset().filter(id_usuario=usuario_id)
         serializer = UsuarioPlanReadSerializer(planes, many=True)
         return Response(serializer.data)
 
 
 class PlanComidaViewSet(viewsets.ModelViewSet):
-    queryset = PlanComida.objects.select_related('id_plan', 'id_comida').all()
+    queryset = PlanComida.objects.select_related('id_plan', 'id_comida').order_by('id_plan_comida')
     serializer_class = PlanComidaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return PlanComidaReadSerializer
+
         return PlanComidaSerializer
 
     @action(detail=False, methods=['get'], url_path='por-plan/(?P<plan_id>[^/.]+)')

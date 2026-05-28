@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Rol, Usuario, Plan, Comida, UsuarioPlan, PlanComida
+from django.contrib.auth.admin import UserAdmin
+
+from .models import Comida, Plan, PlanComida, Rol, Usuario, UsuarioPlan
 
 
 @admin.register(Rol)
@@ -9,11 +11,36 @@ class RolAdmin(admin.ModelAdmin):
 
 
 @admin.register(Usuario)
-class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ['id_usuario', 'nombre', 'apellido', 'email', 'id_rol', 'fecha_registro']
+class UsuarioAdmin(UserAdmin):
+    model = Usuario
+    list_display = ['id_usuario', 'nombre', 'apellido', 'email', 'id_rol', 'is_active', 'is_staff']
     search_fields = ['nombre', 'apellido', 'email']
-    list_filter = ['id_rol', 'fecha_registro']
-    readonly_fields = ['fecha_registro']
+    list_filter = ['id_rol', 'is_active', 'is_staff', 'fecha_registro']
+    ordering = ['email']
+    readonly_fields = ['fecha_registro', 'last_login', 'date_joined']
+
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Datos personales', {'fields': ('nombre', 'apellido', 'id_rol')}),
+        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Fechas importantes', {'fields': ('last_login', 'date_joined', 'fecha_registro')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'email',
+                'nombre',
+                'apellido',
+                'id_rol',
+                'password1',
+                'password2',
+                'is_active',
+                'is_staff',
+                'is_superuser',
+            ),
+        }),
+    )
 
 
 @admin.register(Plan)
