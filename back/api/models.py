@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
 
@@ -14,14 +15,52 @@ class Rol(models.Model):
         return self.nombre_rol
 
 
-class Usuario(models.Model):
+class UsuarioManager(BaseUserManager):
+    use_in_migrations = True
+
+    def _create_user(self, email, password, **extra_fields):
+        if not email:
+            raise ValueError('El email es obligatorio')
+
+        email = self.normalize_email(email)
+        usuario = self.model(email=email, **extra_fields)
+        usuario.set_password(password)
+        usuario.save(using=self._db)
+        return usuario
+
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('El superusuario debe tener is_staff=True')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('El superusuario debe tener is_superuser=True')
+        if not extra_fields.get('id_rol'):
+            extra_fields['id_rol'], _ = Rol.objects.get_or_create(nombre_rol='administrador')
+
+        return self._create_user(email, password, **extra_fields)
+
+
+class Usuario(AbstractUser):
     id_usuario = models.AutoField(primary_key=True)
+    username = None
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
     email = models.EmailField(max_length=255, unique=True)
-    contrasena = models.CharField(max_length=255)
     fecha_registro = models.DateTimeField(auto_now_add=True)
     id_rol = models.ForeignKey(Rol, on_delete=models.RESTRICT, db_column='id_rol')
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['nombre', 'apellido']
+
+    objects = UsuarioManager()
 
     class Meta:
         db_table = 'USUARIO'

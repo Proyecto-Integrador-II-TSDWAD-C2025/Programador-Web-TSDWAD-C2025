@@ -24,6 +24,11 @@ export interface LoginRequest {
   contrasena: string;
 }
 
+export interface LoginResponse {
+  token: string;
+  usuario: UsuarioRead;
+}
+
 export interface RegistroRequest {
   nombre: string;
   apellido: string;
