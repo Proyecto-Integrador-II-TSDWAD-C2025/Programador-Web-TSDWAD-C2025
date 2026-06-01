@@ -17,7 +17,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['id_usuario', 'nombre', 'apellido', 'email', 'contrasena', 'id_rol']
+        fields = ['id_usuario', 'nombre', 'apellido', 'email', 'contrasena', 'id_rol', 'is_active']
 
     def validate(self, attrs):
         contrasena = attrs.get('contrasena')
@@ -83,7 +83,7 @@ class UsuarioReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuario
-        fields = ['id_usuario', 'nombre', 'apellido', 'email', 'fecha_registro', 'id_rol']
+        fields = ['id_usuario', 'nombre', 'apellido', 'email', 'fecha_registro', 'id_rol', 'is_active']
 
 
 class PlanSerializer(serializers.ModelSerializer):
