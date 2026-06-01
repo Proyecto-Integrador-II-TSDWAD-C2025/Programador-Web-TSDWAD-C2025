@@ -2,6 +2,7 @@ from django.db import connection
 from rest_framework import generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -13,7 +14,6 @@ from .permissions import (
     IsAdminOrNutritionistRole,
     IsAdminRole,
     IsAuthenticatedReadOrStaffRoleWrite,
-    IsSelfOrAdminRole,
     user_has_role,
 )
 from .serializers import (
@@ -99,9 +99,10 @@ class RolViewSet(viewsets.ModelViewSet):
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.select_related('id_rol').order_by('id_usuario')
     serializer_class = UsuarioSerializer
-    filter_backends = [SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['id_rol__nombre_rol', 'is_active']
     search_fields = ['nombre', 'apellido', 'email']
-    ordering_fields = ['id_usuario', 'nombre', 'apellido', 'fecha_registro']
+    ordering_fields = ['id_usuario', 'nombre', 'apellido', 'fecha_registro', 'is_active']
     ordering = ['id_usuario']
 
     def get_serializer_class(self):
@@ -113,14 +114,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'test':
             return [AllowAny()]
-        if self.action == 'create':
-            return [IsAdminRole()]
-        if self.action in ['list', 'destroy']:
-            return [IsAdminRole()]
-        if self.action in ['retrieve', 'update', 'partial_update']:
-            return [IsAuthenticated(), IsSelfOrAdminRole()]
-
-        return [IsAuthenticated()]
+        return [IsAdminRole()]
 
     @action(detail=False, methods=['get'])
     def test(self, request):
