@@ -151,7 +151,23 @@
   transform: translateY(-2px);
 }
 
-/* Responsive */
+/* Responsive - Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .dashboard-container {
+    padding: 110px 30px 30px;
+  }
+
+  .cards-resumen,
+  .cards-opciones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+}
+
+/* Responsive - Mobile grande */
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 110px 20px 30px;
@@ -177,5 +193,24 @@
   .cards-resumen,
   .cards-opciones {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive - Mobile chico */
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 90px 16px 24px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .dashboard-section h2 {
+    font-size: 1.4rem;
   }
 }
