@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from .models import Rol, Usuario, Plan, Comida, UsuarioPlan, PlanComida
+from .permissions import user_has_role
 
 
 class RolSerializer(serializers.ModelSerializer):
@@ -40,6 +41,10 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return usuario
 
     def update(self, instance, validated_data):
+        request = self.context.get('request')
+        if request and not user_has_role(request.user, 'administrador'):
+            validated_data.pop('id_rol', None)
+
         contrasena = validated_data.pop('contrasena', None)
 
         for field, value in validated_data.items():
@@ -97,6 +102,15 @@ class UsuarioPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioPlan
         fields = '__all__'
+
+    def validate(self, attrs):
+        fecha_inicio = attrs.get('fecha_inicio')
+        fecha_fin = attrs.get('fecha_fin')
+        if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
+            raise serializers.ValidationError(
+                {'fecha_fin': 'La fecha de fin no puede ser anterior a la fecha de inicio.'}
+            )
+        return attrs
 
 
 class UsuarioPlanReadSerializer(serializers.ModelSerializer):
