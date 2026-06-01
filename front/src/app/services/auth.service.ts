@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, switchMap, map } from 'rxjs';
+import { finalize, map, Observable, tap } from 'rxjs';
 import { API_URL } from './api.config';
 import { UsuarioRead, LoginRequest, LoginResponse, RegistroRequest } from '../models';
 
@@ -36,23 +36,32 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<UsuarioRead> {
     return this.http.post<LoginResponse>(`${API_URL}/login/`, credentials).pipe(
-      tap((response) => {
-        this.currentUser.set(response.usuario);
-        this.isAuthenticated_.set(true);
-        localStorage.setItem('usuario', JSON.stringify(response.usuario));
-        localStorage.setItem('auth_token', response.token);
-      }),
+      tap((response) => this.guardarSesion(response)),
       map((response) => response.usuario)
     );
   }
 
   registro(data: RegistroRequest): Observable<UsuarioRead> {
-    return this.http.post(`${API_URL}/usuarios/`, data).pipe(
-      switchMap(() => this.login({ email: data.email, contrasena: data.contrasena }))
+    return this.http.post<LoginResponse>(`${API_URL}/register/`, data).pipe(
+      tap((response) => this.guardarSesion(response)),
+      map((response) => response.usuario)
     );
   }
 
   logout(): void {
+    this.http.post(`${API_URL}/logout/`, {}).pipe(
+      finalize(() => this.limpiarSesion())
+    ).subscribe({ error: () => {} });
+  }
+
+  private guardarSesion(response: LoginResponse): void {
+    this.currentUser.set(response.usuario);
+    this.isAuthenticated_.set(true);
+    localStorage.setItem('usuario', JSON.stringify(response.usuario));
+    localStorage.setItem('auth_token', response.token);
+  }
+
+  private limpiarSesion(): void {
     this.currentUser.set(null);
     this.isAuthenticated_.set(false);
     localStorage.removeItem('usuario');
