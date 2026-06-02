@@ -111,6 +111,16 @@
   box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
 }
 
+.form-group input.is-invalid,
+.form-group select.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
+}
+
 .btn-perfil {
   display: block;
   text-align: center;
@@ -157,6 +167,7 @@
   .form-row {
     grid-template-columns: 1fr;
   }
+<<<<<<< Updated upstream
   /* Responsive - Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .perfil-page {
@@ -169,3 +180,6 @@
   }
 }
 }
+=======
+}
+>>>>>>> Stashed changes

@@ -14,7 +14,7 @@
 
     @if (mensajeExito()) {
       <div class="exito-message">
-        Perfil guardado exitosamente.
+        Datos del perfil validados correctamente.
       </div>
     }
 
@@ -22,61 +22,82 @@
       <div class="form-row">
         <div class="form-group">
           <label for="edad">Edad</label>
-          <input id="edad" type="number" formControlName="edad" placeholder="Ej: 18">
+          <input id="edad" type="number" formControlName="edad" placeholder="Ej: 18" [class.is-invalid]="campoInvalido('edad')">
+          @if (campoInvalido('edad')) {
+            <small class="text-danger">Ingresá una edad entre 13 y 100 años.</small>
+          }
         </div>
 
         <div class="form-group">
           <label for="pesoActual">Peso actual</label>
-          <input id="pesoActual" type="number" formControlName="pesoActual" placeholder="Ej: 70 kg">
+          <input id="pesoActual" type="number" formControlName="pesoActual" placeholder="Ej: 70 kg" [class.is-invalid]="campoInvalido('pesoActual')">
+          @if (campoInvalido('pesoActual')) {
+            <small class="text-danger">Ingresá un peso entre 30 y 300 kg.</small>
+          }
         </div>
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label for="altura">Altura</label>
-          <input id="altura" type="number" formControlName="altura" placeholder="Ej: 175 cm">
+          <input id="altura" type="number" formControlName="altura" placeholder="Ej: 175 cm" [class.is-invalid]="campoInvalido('altura')">
+          @if (campoInvalido('altura')) {
+            <small class="text-danger">Ingresá una altura entre 100 y 250 cm.</small>
+          }
         </div>
 
         <div class="form-group">
           <label for="pesoObjetivo">Peso objetivo</label>
-          <input id="pesoObjetivo" type="number" formControlName="pesoObjetivo" placeholder="Ej: 65 kg">
+          <input id="pesoObjetivo" type="number" formControlName="pesoObjetivo" placeholder="Ej: 65 kg" [class.is-invalid]="campoInvalido('pesoObjetivo')">
+          @if (campoInvalido('pesoObjetivo')) {
+            <small class="text-danger">Ingresá un peso objetivo entre 30 y 300 kg.</small>
+          }
         </div>
       </div>
 
       <div class="form-group">
         <label for="objetivo">Objetivo físico</label>
-        <select id="objetivo" formControlName="objetivo">
+        <select id="objetivo" formControlName="objetivo" [class.is-invalid]="campoInvalido('objetivo')">
           <option value="">Seleccioná tu objetivo</option>
           <option value="bajar-grasa">Bajar grasa corporal</option>
           <option value="aumentar-masa">Aumentar masa muscular</option>
           <option value="mantener-peso">Mantener peso</option>
           <option value="mejorar-habitos">Mejorar hábitos saludables</option>
         </select>
+        @if (campoInvalido('objetivo')) {
+          <small class="text-danger">Seleccioná un objetivo físico.</small>
+        }
       </div>
 
       <div class="form-group">
         <label for="actividad">Nivel de actividad</label>
-        <select id="actividad" formControlName="actividad">
+        <select id="actividad" formControlName="actividad" [class.is-invalid]="campoInvalido('actividad')">
           <option value="">Seleccioná tu nivel</option>
           <option value="bajo">Bajo</option>
           <option value="moderado">Moderado</option>
           <option value="alto">Alto</option>
         </select>
+        @if (campoInvalido('actividad')) {
+          <small class="text-danger">Seleccioná tu nivel de actividad.</small>
+        }
       </div>
 
       <div class="form-group">
         <label for="preferencia">Preferencia alimenticia</label>
-        <select id="preferencia" formControlName="preferencia">
+        <select id="preferencia" formControlName="preferencia" [class.is-invalid]="campoInvalido('preferencia')">
           <option value="">Seleccioná una opción</option>
           <option value="sin-preferencia">Sin preferencia</option>
           <option value="vegetariana">Vegetariana</option>
           <option value="alta-proteina">Alta en proteínas</option>
           <option value="baja-calorias">Baja en calorías</option>
         </select>
+        @if (campoInvalido('preferencia')) {
+          <small class="text-danger">Seleccioná una preferencia alimenticia.</small>
+        }
       </div>
 
       <button type="submit" class="btn-perfil">
-        Guardar perfil
+        Validar perfil
       </button>
     </form>
   </div>

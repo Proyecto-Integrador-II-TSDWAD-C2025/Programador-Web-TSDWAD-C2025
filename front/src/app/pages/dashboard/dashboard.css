@@ -133,7 +133,9 @@
 }
 
 /* Botones dentro de cards */
-.opcion button {
+.opcion button,
+.opcion-link {
+  display: block;
   margin-top: 22px;
   background-color: var(--color-primary);
   color: #fff;
@@ -142,15 +144,20 @@
   border-radius: 50px;
   cursor: pointer;
   font-weight: 800;
+  text-align: center;
+  text-decoration: none;
   width: 100%;
   transition: all 0.3s ease;
 }
 
-.opcion button:hover {
+.opcion button:hover,
+.opcion-link:hover {
   background-color: var(--color-primary-mid);
+  color: #fff;
   transform: translateY(-2px);
 }
 
+<<<<<<< Updated upstream
 /* Responsive - Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .dashboard-container {
@@ -168,6 +175,15 @@
 }
 
 /* Responsive - Mobile grande */
+=======
+.opcion button:disabled {
+  background-color: #91a197;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+>>>>>>> Stashed changes
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 110px 20px 30px;
@@ -195,6 +211,7 @@
     grid-template-columns: 1fr;
   }
 }
+<<<<<<< Updated upstream
 
 /* Responsive - Mobile chico */
 @media (max-width: 480px) {
@@ -214,3 +231,5 @@
     font-size: 1.4rem;
   }
 }
+=======
+>>>>>>> Stashed changes

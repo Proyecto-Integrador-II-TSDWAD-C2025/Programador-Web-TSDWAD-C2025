@@ -10,6 +10,7 @@ class UsuarioTestCase(TestCase):
     def setUp(self):
         self.rol_usuario = Rol.objects.create(nombre_rol='usuario')
         self.rol_admin = Rol.objects.create(nombre_rol='administrador')
+        self.rol_nutricionista = Rol.objects.create(nombre_rol='nutricionista')
         self.usuario = Usuario.objects.create_user(
             email='test@example.com',
             password='ClaveSegura123!',
@@ -46,3 +47,44 @@ class UsuarioTestCase(TestCase):
         self.client.force_authenticate(user=self.admin)
         response = self.client.get('/api/usuarios/')
         self.assertEqual(response.status_code, 200)
+
+    def test_crear_nutricionista_requires_admin_role(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.post('/api/usuarios/crear-nutricionista/', {
+            'nombre': 'Nora',
+            'apellido': 'Profesional',
+            'email': 'nora@example.com',
+            'contrasena': 'ClaveSegura123!',
+        })
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_can_create_nutricionista_with_hashed_password(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post('/api/usuarios/crear-nutricionista/', {
+            'nombre': 'Nora',
+            'apellido': 'Profesional',
+            'email': 'nora@example.com',
+            'contrasena': 'ClaveSegura123!',
+        })
+        self.assertEqual(response.status_code, 201)
+
+        nutricionista = Usuario.objects.get(email='nora@example.com')
+        self.assertEqual(nutricionista.id_rol.nombre_rol, 'nutricionista')
+        self.assertTrue(nutricionista.check_password('ClaveSegura123!'))
+        self.assertTrue(nutricionista.password.startswith('pbkdf2_'))
+
+    def test_nutricionistas_endpoint_only_lists_professionals(self):
+        Usuario.objects.create_user(
+            email='nutri@example.com',
+            password='ClaveSegura123!',
+            nombre='Nutri',
+            apellido='Prueba',
+            id_rol=self.rol_nutricionista,
+        )
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get('/api/usuarios/nutricionistas/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]['email'], 'nutri@example.com')

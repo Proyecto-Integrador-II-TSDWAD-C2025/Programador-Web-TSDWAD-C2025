@@ -21,4 +21,16 @@ export class ComidaService {
       map(res => Array.isArray(res) ? res : res.results)
     );
   }
+
+  createComida(comida: Omit<Comida, 'id_comida'>): Observable<Comida> {
+    return this.http.post<Comida>(`${API_URL}/comidas/`, comida);
+  }
+
+  updateComida(id: number, comida: Omit<Comida, 'id_comida'>): Observable<Comida> {
+    return this.http.put<Comida>(`${API_URL}/comidas/${id}/`, comida);
+  }
+
+  deleteComida(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/comidas/${id}/`);
+  }
 }

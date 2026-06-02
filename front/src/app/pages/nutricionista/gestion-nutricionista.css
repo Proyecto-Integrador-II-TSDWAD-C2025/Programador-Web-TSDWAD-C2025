@@ -1,0 +1,236 @@
+.gestion-page {
+  min-height: 100vh;
+  padding: 118px 32px 48px;
+  background: #eef4ef;
+  color: #243229;
+}
+
+.gestion-shell {
+  max-width: 1260px;
+  margin: 0 auto;
+}
+
+.gestion-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 26px;
+}
+
+.gestion-header h1 {
+  margin: 8px 0 6px;
+  color: #1a1a2e;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.gestion-header p {
+  margin: 0;
+  color: #5d6c63;
+}
+
+.gestion-eyebrow {
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.gestion-back {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.gestion-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.gestion-panel {
+  background: #fff;
+  border: 1px solid #dce8df;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(20, 56, 30, 0.06);
+}
+
+.gestion-form-panel {
+  padding: 22px;
+}
+
+.gestion-list-panel {
+  overflow: hidden;
+}
+
+.gestion-panel h2 {
+  margin: 0 0 18px;
+  color: #1a1a2e;
+  font-size: 1.18rem;
+  font-weight: 800;
+}
+
+.gestion-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.gestion-field label {
+  display: block;
+  margin-bottom: 6px;
+  color: #34443a;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gestion-field input,
+.gestion-field textarea {
+  width: 100%;
+  border: 1px solid #cbd9cf;
+  border-radius: 6px;
+  padding: 10px 11px;
+  color: #243229;
+  font: inherit;
+}
+
+.gestion-field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.gestion-field input:focus,
+.gestion-field textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
+  outline: none;
+}
+
+.gestion-field .is-invalid {
+  border-color: #c83b4a;
+}
+
+.gestion-error {
+  display: block;
+  margin-top: 5px;
+  color: #b42333;
+  font-size: 0.78rem;
+}
+
+.gestion-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.gestion-button {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.gestion-button-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.gestion-button-secondary {
+  background: #fff;
+  border-color: #cbd9cf;
+  color: #34443a;
+}
+
+.gestion-button-danger {
+  background: #fff;
+  border-color: #e6b8bd;
+  color: #ad2434;
+}
+
+.gestion-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.gestion-feedback {
+  margin: 0 0 16px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.gestion-feedback-success {
+  background: #eaf7ec;
+  color: #256c33;
+}
+
+.gestion-feedback-error {
+  background: #fdecee;
+  color: #ad2434;
+}
+
+.gestion-table-wrap {
+  overflow-x: auto;
+}
+
+.gestion-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gestion-table th,
+.gestion-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5eee7;
+  text-align: left;
+  vertical-align: top;
+}
+
+.gestion-table th {
+  background: #f7faf8;
+  color: #526157;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.gestion-table td {
+  color: #36463c;
+  font-size: 0.9rem;
+}
+
+.gestion-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.gestion-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gestion-empty,
+.gestion-loading {
+  margin: 0;
+  padding: 30px 20px;
+  color: #68776e;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .gestion-page {
+    padding: 104px 18px 34px;
+  }
+
+  .gestion-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gestion-grid {
+    grid-template-columns: 1fr;
+  }
+}

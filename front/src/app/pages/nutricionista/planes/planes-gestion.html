@@ -1,0 +1,106 @@
+<section class="gestion-page">
+  <div class="gestion-shell">
+    <header class="gestion-header">
+      <div>
+        <span class="gestion-eyebrow">Panel profesional</span>
+        <h1>Gestión de planes alimenticios</h1>
+        <p>Creá y mantené las propuestas nutricionales disponibles para tus pacientes.</p>
+      </div>
+      <a routerLink="/dashboard" class="gestion-back">Volver al dashboard</a>
+    </header>
+
+    @if (mensaje()) {
+      <p class="gestion-feedback gestion-feedback-success">{{ mensaje() }}</p>
+    }
+    @if (error()) {
+      <p class="gestion-feedback gestion-feedback-error">{{ error() }}</p>
+    }
+
+    <div class="gestion-grid">
+      <section class="gestion-panel gestion-form-panel">
+        <h2>{{ planEditando() ? 'Editar plan' : 'Nuevo plan' }}</h2>
+        <form [formGroup]="planForm" (ngSubmit)="guardar()" class="gestion-form">
+          <div class="gestion-field">
+            <label for="nombrePlan">Nombre</label>
+            <input id="nombrePlan" type="text" formControlName="nombre_plan" [class.is-invalid]="campoInvalido('nombre_plan')">
+            @if (campoInvalido('nombre_plan')) {
+              <small class="gestion-error">Ingresá un nombre de hasta 100 caracteres.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="descripcionPlan">Descripción</label>
+            <textarea id="descripcionPlan" formControlName="descripcion" [class.is-invalid]="campoInvalido('descripcion')"></textarea>
+            @if (campoInvalido('descripcion')) {
+              <small class="gestion-error">Ingresá una descripción breve del plan.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="duracionPlan">Duración en días</label>
+            <input id="duracionPlan" type="number" formControlName="duracion_dias" [class.is-invalid]="campoInvalido('duracion_dias')">
+            @if (campoInvalido('duracion_dias')) {
+              <small class="gestion-error">Ingresá una duración entre 1 y 365 días.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="caloriasPlan">Calorías objetivo</label>
+            <input id="caloriasPlan" type="number" formControlName="calorias_objetivo" [class.is-invalid]="campoInvalido('calorias_objetivo')">
+            @if (campoInvalido('calorias_objetivo')) {
+              <small class="gestion-error">Ingresá un valor entre 500 y 6000 kcal.</small>
+            }
+          </div>
+
+          <div class="gestion-actions">
+            <button type="submit" class="gestion-button gestion-button-primary" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando...' : (planEditando() ? 'Actualizar' : 'Crear plan') }}
+            </button>
+            @if (planEditando()) {
+              <button type="button" class="gestion-button gestion-button-secondary" (click)="cancelarEdicion()">Cancelar</button>
+            }
+          </div>
+        </form>
+      </section>
+
+      <section class="gestion-panel gestion-list-panel">
+        @if (cargando()) {
+          <p class="gestion-loading">Cargando planes...</p>
+        } @else if (planes().length === 0) {
+          <p class="gestion-empty">Todavía no hay planes alimenticios cargados.</p>
+        } @else {
+          <div class="gestion-table-wrap">
+            <table class="gestion-table">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Duración</th>
+                  <th>Calorías</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (plan of planes(); track plan.id_plan) {
+                  <tr>
+                    <td>
+                      <strong>{{ plan.nombre_plan }}</strong><br>
+                      {{ plan.descripcion }}
+                    </td>
+                    <td>{{ plan.duracion_dias }} días</td>
+                    <td>{{ plan.calorias_objetivo }} kcal</td>
+                    <td>
+                      <div class="gestion-row-actions">
+                        <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(plan)">Editar</button>
+                        <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(plan)">Eliminar</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</section>

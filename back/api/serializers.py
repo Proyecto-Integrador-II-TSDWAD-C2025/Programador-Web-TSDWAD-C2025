@@ -57,6 +57,19 @@ class UsuarioSerializer(serializers.ModelSerializer):
         return instance
 
 
+class NutricionistaCreateSerializer(UsuarioSerializer):
+    class Meta(UsuarioSerializer.Meta):
+        fields = ['id_usuario', 'nombre', 'apellido', 'email', 'contrasena']
+
+    def create(self, validated_data):
+        rol_nutricionista = Rol.objects.filter(nombre_rol='nutricionista').first()
+        if rol_nutricionista is None:
+            rol_nutricionista = Rol.objects.create(nombre_rol='nutricionista')
+
+        validated_data['id_rol'] = rol_nutricionista
+        return super().create(validated_data)
+
+
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     contrasena = serializers.CharField(write_only=True, style={'input_type': 'password'})

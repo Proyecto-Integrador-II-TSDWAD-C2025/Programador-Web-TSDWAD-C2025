@@ -1,8 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-perfil',
@@ -18,17 +16,27 @@ export class Perfil {
   mensajeExito = signal(false);
 
   perfilForm = new FormGroup({
-    edad: new FormControl<number | null>(null),
-    pesoActual: new FormControl<number | null>(null),
-    altura: new FormControl<number | null>(null),
-    pesoObjetivo: new FormControl<number | null>(null),
-    objetivo: new FormControl(''),
-    actividad: new FormControl(''),
-    preferencia: new FormControl(''),
+    edad: new FormControl<number | null>(null, [Validators.required, Validators.min(13), Validators.max(100)]),
+    pesoActual: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
+    altura: new FormControl<number | null>(null, [Validators.required, Validators.min(100), Validators.max(250)]),
+    pesoObjetivo: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
+    objetivo: new FormControl('', [Validators.required]),
+    actividad: new FormControl('', [Validators.required]),
+    preferencia: new FormControl('', [Validators.required]),
   });
 
   guardar() {
+    if (this.perfilForm.invalid) {
+      this.perfilForm.markAllAsTouched();
+      return;
+    }
+
     this.mensajeExito.set(true);
     setTimeout(() => this.mensajeExito.set(false), 3000);
+  }
+
+  campoInvalido(nombre: string): boolean {
+    const campo = this.perfilForm.get(nombre);
+    return !!campo && campo.invalid && campo.touched;
   }
 }
