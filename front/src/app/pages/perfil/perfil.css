@@ -157,4 +157,15 @@
   .form-row {
     grid-template-columns: 1fr;
   }
+  /* Responsive - Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .perfil-page {
+    padding: 120px 30px 40px;
+  }
+
+  .perfil-card {
+    max-width: 640px;
+    padding: 32px;
+  }
+}
 }
