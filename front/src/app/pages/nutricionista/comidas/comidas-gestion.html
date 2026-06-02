@@ -29,6 +29,23 @@
           </div>
 
           <div class="gestion-field">
+            <label for="categoriaComida">Categoria</label>
+            <select id="categoriaComida" formControlName="categoria">
+              @for (categoria of categorias; track categoria.value) {
+                <option [value]="categoria.value">{{ categoria.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="gestion-field">
+            <label for="porcionComida">Porcion de referencia</label>
+            <input id="porcionComida" type="text" formControlName="porcion_referencia" [class.is-invalid]="campoInvalido('porcion_referencia')">
+            @if (campoInvalido('porcion_referencia')) {
+              <small class="gestion-error">Ingresa una porcion de referencia.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
             <label for="caloriasComida">Calorías</label>
             <input id="caloriasComida" type="number" formControlName="calorias" [class.is-invalid]="campoInvalido('calorias')">
             @if (campoInvalido('calorias')) {
@@ -82,6 +99,7 @@
               <thead>
                 <tr>
                   <th>Comida</th>
+                  <th>Categoria</th>
                   <th>Calorías</th>
                   <th>Proteínas</th>
                   <th>Carbohidratos</th>
@@ -93,6 +111,7 @@
                 @for (comida of comidas(); track comida.id_comida) {
                   <tr>
                     <td><strong>{{ comida.nombre }}</strong></td>
+                    <td>{{ etiquetaCategoria(comida.categoria) }}<br>{{ comida.porcion_referencia }}</td>
                     <td>{{ comida.calorias }} kcal</td>
                     <td>{{ comida.proteinas }} g</td>
                     <td>{{ comida.carbohidratos }} g</td>

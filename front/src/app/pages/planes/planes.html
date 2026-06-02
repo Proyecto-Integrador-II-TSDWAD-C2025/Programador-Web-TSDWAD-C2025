@@ -2,7 +2,7 @@
   <div class="planes-header">
     <span class="planes-badge">Nutrición personalizada</span>
     <h1>Planes alimenticios</h1>
-    <p>Elegí el plan que mejor se adapte a tus objetivos y comenzó tu camino hacia una vida más saludable.</p>
+    <p>Explorá plantillas orientativas. Un nutricionista puede adaptarlas antes de asignarlas a tu seguimiento.</p>
   </div>
 
   @if (cargando()) {
@@ -25,6 +25,10 @@
             <h3>{{ plan.nombre_plan }}</h3>
           </div>
           <div class="plan-card-body">
+            <div class="plan-meta">
+              <span>{{ etiquetaObjetivo(plan.objetivo) }}</span>
+              <span>{{ etiquetaActividad(plan.nivel_actividad) }}</span>
+            </div>
             <p class="plan-description">{{ plan.descripcion }}</p>
             <div class="plan-details">
               <div class="plan-detail">
@@ -36,7 +40,10 @@
                 <span class="detail-value">{{ plan.calorias_objetivo }} kcal</span>
               </div>
             </div>
-            <button class="plan-btn">Ver detalle</button>
+            @if (plan.observaciones) {
+              <p class="plan-observations">{{ plan.observaciones }}</p>
+            }
+            <a [routerLink]="['/planes', plan.id_plan]" class="plan-btn">Ver detalle</a>
           </div>
         </div>
       }

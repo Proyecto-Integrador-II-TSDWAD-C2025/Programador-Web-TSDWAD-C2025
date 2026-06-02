@@ -1,0 +1,60 @@
+.menu-list-panel {
+  min-width: 0;
+}
+
+.menu-days {
+  display: grid;
+  gap: 14px;
+}
+
+.menu-day {
+  overflow: hidden;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+}
+
+.menu-day h3 {
+  margin: 0;
+  padding: 10px 14px;
+  color: #fff;
+  background: #2d7a3a;
+  font-size: 0.95rem;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf2ee;
+}
+
+.menu-item:last-child {
+  border-bottom: 0;
+}
+
+.menu-item span,
+.menu-item strong,
+.menu-item small {
+  display: block;
+}
+
+.menu-item span {
+  color: #2d7a3a;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.menu-item small {
+  margin-top: 3px;
+  color: #718078;
+}
+
+@media (max-width: 640px) {
+  .menu-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

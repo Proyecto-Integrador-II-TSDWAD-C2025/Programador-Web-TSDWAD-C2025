@@ -3,8 +3,8 @@
     <header class="gestion-header">
       <div>
         <span class="gestion-eyebrow">Panel profesional</span>
-        <h1>Gestión de planes alimenticios</h1>
-        <p>Creá y mantené las propuestas nutricionales disponibles para tus pacientes.</p>
+        <h1>Plantillas de planes alimenticios</h1>
+        <p>Prepará bases reutilizables y adaptalas antes de asignarlas a cada paciente.</p>
       </div>
       <a routerLink="/dashboard" class="gestion-back">Volver al dashboard</a>
     </header>
@@ -18,7 +18,7 @@
 
     <div class="gestion-grid">
       <section class="gestion-panel gestion-form-panel">
-        <h2>{{ planEditando() ? 'Editar plan' : 'Nuevo plan' }}</h2>
+        <h2>{{ planEditando() ? 'Editar plantilla' : 'Nueva plantilla' }}</h2>
         <form [formGroup]="planForm" (ngSubmit)="guardar()" class="gestion-form">
           <div class="gestion-field">
             <label for="nombrePlan">Nombre</label>
@@ -29,11 +29,59 @@
           </div>
 
           <div class="gestion-field">
+            <label for="objetivoPlan">Objetivo</label>
+            <select id="objetivoPlan" formControlName="objetivo" [class.is-invalid]="campoInvalido('objetivo')">
+              <option value="">Seleccioná un objetivo</option>
+              @for (objetivo of objetivos; track objetivo.value) {
+                <option [value]="objetivo.value">{{ objetivo.label }}</option>
+              }
+            </select>
+            @if (campoInvalido('objetivo')) {
+              <small class="gestion-error">Seleccioná el objetivo principal de la plantilla.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="actividadPlan">Nivel de actividad recomendado</label>
+            <select id="actividadPlan" formControlName="nivel_actividad" [class.is-invalid]="campoInvalido('nivel_actividad')">
+              <option value="">Seleccioná un nivel</option>
+              @for (nivel of nivelesActividad; track nivel.value) {
+                <option [value]="nivel.value">{{ nivel.label }}</option>
+              }
+            </select>
+            @if (campoInvalido('nivel_actividad')) {
+              <small class="gestion-error">Seleccioná un nivel de actividad.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
             <label for="descripcionPlan">Descripción</label>
             <textarea id="descripcionPlan" formControlName="descripcion" [class.is-invalid]="campoInvalido('descripcion')"></textarea>
             @if (campoInvalido('descripcion')) {
               <small class="gestion-error">Ingresá una descripción breve del plan.</small>
             }
+          </div>
+
+          <div class="gestion-field">
+            <label for="observacionesPlan">Observaciones para adaptar antes de asignar</label>
+            <textarea id="observacionesPlan" formControlName="observaciones" [class.is-invalid]="campoInvalido('observaciones')"></textarea>
+            @if (campoInvalido('observaciones')) {
+              <small class="gestion-error">Las observaciones no pueden superar los 1000 caracteres.</small>
+            }
+          </div>
+
+          <div class="gestion-field gestion-checkbox">
+            <input id="activoPlan" type="checkbox" formControlName="activo">
+            <label for="activoPlan">Plantilla disponible para asignar</label>
+          </div>
+
+          <div class="gestion-field">
+            <label for="preferenciaPlan">Preferencia compatible</label>
+            <select id="preferenciaPlan" formControlName="preferencia_compatible">
+              @for (preferencia of preferencias; track preferencia.value) {
+                <option [value]="preferencia.value">{{ preferencia.label }}</option>
+              }
+            </select>
           </div>
 
           <div class="gestion-field">
@@ -54,7 +102,7 @@
 
           <div class="gestion-actions">
             <button type="submit" class="gestion-button gestion-button-primary" [disabled]="guardando()">
-              {{ guardando() ? 'Guardando...' : (planEditando() ? 'Actualizar' : 'Crear plan') }}
+              {{ guardando() ? 'Guardando...' : (planEditando() ? 'Actualizar' : 'Crear plantilla') }}
             </button>
             @if (planEditando()) {
               <button type="button" class="gestion-button gestion-button-secondary" (click)="cancelarEdicion()">Cancelar</button>
@@ -65,16 +113,18 @@
 
       <section class="gestion-panel gestion-list-panel">
         @if (cargando()) {
-          <p class="gestion-loading">Cargando planes...</p>
+          <p class="gestion-loading">Cargando plantillas...</p>
         } @else if (planes().length === 0) {
-          <p class="gestion-empty">Todavía no hay planes alimenticios cargados.</p>
+          <p class="gestion-empty">Todavía no hay plantillas alimenticias cargadas.</p>
         } @else {
           <div class="gestion-table-wrap">
             <table class="gestion-table">
               <thead>
                 <tr>
                   <th>Plan</th>
-                  <th>Duración</th>
+                  <th>Objetivo</th>
+                  <th>Actividad</th>
+                  <th>Preferencia</th>
                   <th>Calorías</th>
                   <th>Acciones</th>
                 </tr>
@@ -85,12 +135,19 @@
                     <td>
                       <strong>{{ plan.nombre_plan }}</strong><br>
                       {{ plan.descripcion }}
+                      <br>
+                      <span class="gestion-tag" [class.gestion-tag-inactive]="!plan.activo">
+                        {{ plan.activo ? 'Disponible' : 'Borrador' }}
+                      </span>
                     </td>
-                    <td>{{ plan.duracion_dias }} días</td>
+                    <td>{{ etiquetaObjetivo(plan.objetivo) }}</td>
+                    <td>{{ etiquetaActividad(plan.nivel_actividad) }} · {{ plan.duracion_dias }} días</td>
+                    <td>{{ etiquetaPreferencia(plan.preferencia_compatible) }}</td>
                     <td>{{ plan.calorias_objetivo }} kcal</td>
                     <td>
                       <div class="gestion-row-actions">
                         <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(plan)">Editar</button>
+                        <a [routerLink]="['/nutricionista/planes', plan.id_plan, 'menu']" class="gestion-button gestion-button-secondary">Menú</a>
                         <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(plan)">Eliminar</button>
                       </div>
                     </td>

@@ -1,6 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import {
+  ActividadPerfil,
+  ObjetivoPerfil,
+  PerfilPayload,
+  PreferenciaPerfil,
+} from '../../models';
 import { AuthService } from '../../services/auth.service';
+import { PerfilService } from '../../services/perfil.service';
 
 @Component({
   selector: 'app-perfil',
@@ -9,30 +18,87 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './perfil.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Perfil {
+export class Perfil implements OnInit {
   private authService = inject(AuthService);
+  private perfilService = inject(PerfilService);
+  private router = inject(Router);
 
   usuario = this.authService.usuario;
-  mensajeExito = signal(false);
+  cargando = signal(true);
+  guardando = signal(false);
+  mensajeExito = signal('');
+  mensajeError = signal('');
 
   perfilForm = new FormGroup({
     edad: new FormControl<number | null>(null, [Validators.required, Validators.min(13), Validators.max(100)]),
-    pesoActual: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
-    altura: new FormControl<number | null>(null, [Validators.required, Validators.min(100), Validators.max(250)]),
-    pesoObjetivo: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
-    objetivo: new FormControl('', [Validators.required]),
-    actividad: new FormControl('', [Validators.required]),
-    preferencia: new FormControl('', [Validators.required]),
+    peso_actual: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
+    altura_cm: new FormControl<number | null>(null, [Validators.required, Validators.min(100), Validators.max(250)]),
+    peso_objetivo: new FormControl<number | null>(null, [Validators.required, Validators.min(30), Validators.max(300)]),
+    objetivo: new FormControl<ObjetivoPerfil | ''>('', [Validators.required]),
+    actividad: new FormControl<ActividadPerfil | ''>('', [Validators.required]),
+    preferencia: new FormControl<PreferenciaPerfil | ''>('', [Validators.required]),
+    dias_entrenamiento: new FormControl<number | null>(3, [Validators.required, Validators.min(1), Validators.max(6)]),
+    limitaciones: new FormControl('', [Validators.maxLength(500)]),
+    consideraciones_alimentarias: new FormControl('', [Validators.maxLength(500)]),
   });
 
-  guardar() {
+  ngOnInit(): void {
+    this.perfilService.getPerfil().pipe(
+      finalize(() => this.cargando.set(false))
+    ).subscribe({
+      next: ({ perfil }) => {
+        this.perfilForm.patchValue({
+          edad: perfil.edad,
+          peso_actual: Number(perfil.peso_actual),
+          altura_cm: perfil.altura_cm,
+          peso_objetivo: Number(perfil.peso_objetivo),
+          objetivo: perfil.objetivo,
+          actividad: perfil.actividad,
+          preferencia: perfil.preferencia,
+          dias_entrenamiento: perfil.dias_entrenamiento,
+          limitaciones: perfil.limitaciones,
+          consideraciones_alimentarias: perfil.consideraciones_alimentarias,
+        });
+      },
+      error: (error) => {
+        if (error.status !== 404) {
+          this.mensajeError.set('No pudimos cargar tu perfil. Intenta nuevamente.');
+        }
+      },
+    });
+  }
+
+  guardar(): void {
     if (this.perfilForm.invalid) {
       this.perfilForm.markAllAsTouched();
       return;
     }
 
-    this.mensajeExito.set(true);
-    setTimeout(() => this.mensajeExito.set(false), 3000);
+    const datos = this.perfilForm.getRawValue();
+    const perfil: PerfilPayload = {
+      edad: datos.edad!,
+      peso_actual: datos.peso_actual!,
+      altura_cm: datos.altura_cm!,
+      peso_objetivo: datos.peso_objetivo!,
+      objetivo: datos.objetivo as ObjetivoPerfil,
+      actividad: datos.actividad as ActividadPerfil,
+      preferencia: datos.preferencia as PreferenciaPerfil,
+      dias_entrenamiento: datos.dias_entrenamiento!,
+      limitaciones: datos.limitaciones ?? '',
+      consideraciones_alimentarias: datos.consideraciones_alimentarias ?? '',
+    };
+
+    this.guardando.set(true);
+    this.mensajeError.set('');
+    this.perfilService.guardarPerfil(perfil).pipe(
+      finalize(() => this.guardando.set(false))
+    ).subscribe({
+      next: ({ mensaje }) => {
+        this.mensajeExito.set(mensaje);
+        setTimeout(() => this.router.navigate(['/mi-rutina']), 650);
+      },
+      error: () => this.mensajeError.set('Revisa los datos ingresados e intenta nuevamente.'),
+    });
   }
 
   campoInvalido(nombre: string): boolean {

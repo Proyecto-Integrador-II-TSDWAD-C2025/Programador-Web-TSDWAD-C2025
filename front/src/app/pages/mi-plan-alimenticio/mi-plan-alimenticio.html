@@ -1,0 +1,79 @@
+<section class="food-plan-page">
+  <div class="food-plan-container">
+    <header class="food-plan-header">
+      <div>
+        <span class="food-plan-badge">Orientacion alimenticia</span>
+        <h1>Mi plan alimenticio</h1>
+        <p>Una plantilla inicial para ayudarte a organizar comidas variadas durante la semana.</p>
+      </div>
+      <nav class="food-plan-actions">
+        <a routerLink="/perfil">Editar perfil</a>
+        <a routerLink="/dashboard">Volver al panel</a>
+      </nav>
+    </header>
+
+    @if (cargando()) {
+      <p class="food-state">Cargando plan...</p>
+    } @else if (error()) {
+      <div class="food-state food-state-error">
+        <p>{{ error() }}</p>
+        <a routerLink="/perfil">Completar perfil</a>
+      </div>
+    } @else if (respuesta()?.requiere_revision) {
+      <div class="food-state">
+        <span class="food-plan-badge">Revision pendiente</span>
+        <h2>Tu alimentacion necesita una mirada profesional</h2>
+        <p>{{ respuesta()?.mensaje }}</p>
+        <a routerLink="/perfil">Revisar mis datos</a>
+      </div>
+    } @else if (respuesta()?.asignacion; as asignacion) {
+      <section class="food-overview">
+        <div>
+          <span class="food-plan-badge">{{ asignacion.origen === 'profesional' ? 'Asignado por profesional' : 'Sugerencia orientativa' }}</span>
+          <h2>{{ asignacion.plan.nombre_plan }}</h2>
+          <p>{{ asignacion.plan.descripcion }}</p>
+        </div>
+        <div class="food-progress">
+          <strong>{{ comidasCompletadas() }}/{{ totalComidas() }}</strong>
+          <span>comidas marcadas hoy</span>
+        </div>
+      </section>
+
+      <div class="food-meta">
+        <div><span>Duracion</span><strong>{{ asignacion.plan.duracion_dias }} dias</strong></div>
+        <div><span>Referencia</span><strong>{{ asignacion.plan.calorias_objetivo }} kcal</strong></div>
+        <div><span>Preferencia</span><strong>{{ asignacion.plan.preferencia_compatible }}</strong></div>
+      </div>
+
+      <p class="food-reason">{{ asignacion.motivo }}</p>
+
+      <div class="food-day-list">
+        @for (dia of dias(); track dia) {
+          <section class="food-day">
+            <header><span>Dia {{ dia }}</span><strong>Ciclo orientativo</strong></header>
+            @for (item of comidasDelDia(dia); track item.id_plan_comida) {
+              <label class="food-row food-row-checkable" [class.food-row-completed]="item.completada_hoy">
+                <input
+                  type="checkbox"
+                  [checked]="item.completada_hoy"
+                  [disabled]="actualizando() === item.id_plan_comida"
+                  (change)="alternarComida(item.id_plan_comida)"
+                >
+                <span class="food-check" aria-hidden="true"></span>
+                <span class="food-time">{{ item.tipo_comida }}</span>
+                <span class="food-content">
+                  <strong>{{ nombreComida(item) }}</strong>
+                  <small>{{ item.porcion }} @if (item.alternativa) { · Alternativa: {{ item.alternativa }} }</small>
+                </span>
+              </label>
+            }
+          </section>
+        }
+      </div>
+
+      <p class="food-note">
+        Este menu es una orientacion inicial y utiliza un ciclo breve que puede repetirse. Consulta a un nutricionista para adaptarlo a tus necesidades.
+      </p>
+    }
+  </div>
+</section>

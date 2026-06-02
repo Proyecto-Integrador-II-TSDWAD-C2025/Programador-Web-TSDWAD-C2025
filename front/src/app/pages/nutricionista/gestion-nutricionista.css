@@ -87,6 +87,7 @@
 }
 
 .gestion-field input,
+.gestion-field select,
 .gestion-field textarea {
   width: 100%;
   border: 1px solid #cbd9cf;
@@ -102,6 +103,7 @@
 }
 
 .gestion-field input:focus,
+.gestion-field select:focus,
 .gestion-field textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
@@ -110,6 +112,38 @@
 
 .gestion-field .is-invalid {
   border-color: #c83b4a;
+}
+
+.gestion-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.gestion-checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+}
+
+.gestion-checkbox label {
+  margin: 0;
+}
+
+.gestion-tag {
+  display: inline-block;
+  margin-top: 5px;
+  border-radius: 20px;
+  padding: 4px 8px;
+  background: #edf6ef;
+  color: #2d6f39;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.gestion-tag-inactive {
+  background: #f2f3f2;
+  color: #68776e;
 }
 
 .gestion-error {
