@@ -1,0 +1,105 @@
+<section class="gestion-page">
+  <div class="gestion-shell">
+    <header class="gestion-header">
+      <div>
+        <span class="gestion-eyebrow">Panel administrativo</span>
+        <h1>Gestión de nutricionistas</h1>
+        <p>Creá y administrá las cuentas profesionales habilitadas para utilizar NutriApp.</p>
+      </div>
+      <a routerLink="/dashboard" class="gestion-back">Volver al dashboard</a>
+    </header>
+
+    @if (mensaje()) {
+      <p class="gestion-feedback gestion-feedback-success">{{ mensaje() }}</p>
+    }
+    @if (error()) {
+      <p class="gestion-feedback gestion-feedback-error">{{ error() }}</p>
+    }
+
+    <div class="gestion-grid">
+      <section class="gestion-panel gestion-form-panel">
+        <h2>{{ nutricionistaEditando() ? 'Editar profesional' : 'Nuevo nutricionista' }}</h2>
+        <form [formGroup]="nutricionistaForm" (ngSubmit)="guardar()" class="gestion-form">
+          <div class="gestion-field">
+            <label for="nombreNutricionista">Nombre</label>
+            <input id="nombreNutricionista" type="text" formControlName="nombre" [class.is-invalid]="campoInvalido('nombre')">
+            @if (campoInvalido('nombre')) {
+              <small class="gestion-error">Ingresá un nombre de hasta 100 caracteres.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="apellidoNutricionista">Apellido</label>
+            <input id="apellidoNutricionista" type="text" formControlName="apellido" [class.is-invalid]="campoInvalido('apellido')">
+            @if (campoInvalido('apellido')) {
+              <small class="gestion-error">Ingresá un apellido de hasta 100 caracteres.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="emailNutricionista">Correo electrónico</label>
+            <input id="emailNutricionista" type="email" formControlName="email" [class.is-invalid]="campoInvalido('email')">
+            @if (campoInvalido('email')) {
+              <small class="gestion-error">Ingresá un correo electrónico válido.</small>
+            }
+          </div>
+
+          <div class="gestion-field">
+            <label for="contrasenaNutricionista">
+              {{ nutricionistaEditando() ? 'Nueva contraseña (opcional)' : 'Contraseña inicial' }}
+            </label>
+            <input id="contrasenaNutricionista" type="password" formControlName="contrasena" [class.is-invalid]="campoInvalido('contrasena')">
+            @if (campoInvalido('contrasena')) {
+              <small class="gestion-error">La contraseña debe tener al menos 8 caracteres.</small>
+            }
+          </div>
+
+          <div class="gestion-actions">
+            <button type="submit" class="gestion-button gestion-button-primary" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando...' : (nutricionistaEditando() ? 'Actualizar' : 'Crear nutricionista') }}
+            </button>
+            @if (nutricionistaEditando()) {
+              <button type="button" class="gestion-button gestion-button-secondary" (click)="cancelarEdicion()">Cancelar</button>
+            }
+          </div>
+        </form>
+      </section>
+
+      <section class="gestion-panel gestion-list-panel">
+        @if (cargando()) {
+          <p class="gestion-loading">Cargando profesionales...</p>
+        } @else if (nutricionistas().length === 0) {
+          <p class="gestion-empty">Todavía no hay nutricionistas registrados.</p>
+        } @else {
+          <div class="gestion-table-wrap">
+            <table class="gestion-table nutricionistas-table">
+              <thead>
+                <tr>
+                  <th>Profesional</th>
+                  <th>Correo electrónico</th>
+                  <th>Fecha de alta</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (nutricionista of nutricionistas(); track nutricionista.id_usuario) {
+                  <tr>
+                    <td><strong>{{ nutricionista.nombre }} {{ nutricionista.apellido }}</strong></td>
+                    <td>{{ nutricionista.email }}</td>
+                    <td>{{ nutricionista.fecha_registro }}</td>
+                    <td>
+                      <div class="gestion-row-actions">
+                        <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(nutricionista)">Editar</button>
+                        <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(nutricionista)">Eliminar</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</section>

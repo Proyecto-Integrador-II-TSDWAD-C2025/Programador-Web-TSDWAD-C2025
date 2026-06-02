@@ -25,4 +25,16 @@ export class PlanService {
   getPlan(id: number): Observable<Plan> {
     return this.http.get<Plan>(`${API_URL}/planes/${id}/`);
   }
+
+  createPlan(plan: Omit<Plan, 'id_plan'>): Observable<Plan> {
+    return this.http.post<Plan>(`${API_URL}/planes/`, plan);
+  }
+
+  updatePlan(id: number, plan: Omit<Plan, 'id_plan'>): Observable<Plan> {
+    return this.http.put<Plan>(`${API_URL}/planes/${id}/`, plan);
+  }
+
+  deletePlan(id: number): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/planes/${id}/`);
+  }
 }

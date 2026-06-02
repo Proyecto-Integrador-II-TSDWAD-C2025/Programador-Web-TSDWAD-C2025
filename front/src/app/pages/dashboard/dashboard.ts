@@ -1,14 +1,14 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { PlanService } from '../../services/plan.service';
 import { UsuarioPlanService } from '../../services/usuario-plan.service';
 import { Plan, UsuarioPlan } from '../../models';
-import { ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -34,15 +34,16 @@ export class DashboardComponent implements OnInit {
   ];
 
   opcionesNutricionista = [
+    { titulo: 'Gestionar planes alimenticios', descripcion: 'Crear, editar o eliminar planes nutricionales disponibles.', ruta: '/nutricionista/planes' },
+    { titulo: 'Gestionar comidas', descripcion: 'Cargar alimentos y mantener sus valores nutricionales.', ruta: '/nutricionista/comidas' },
     { titulo: 'Ver pacientes', descripcion: 'Consultar la lista de usuarios asignados para seguimiento.' },
     { titulo: 'Revisar registros alimentarios', descripcion: 'Analizar comidas cargadas, calorías y hábitos alimentarios.' },
     { titulo: 'Responder consultas', descripcion: 'Atender mensajes o dudas enviadas por los pacientes.' },
-    { titulo: 'Cargar recomendación', descripcion: 'Crear indicaciones nutricionales personalizadas.' },
   ];
 
   opcionesAdmin = [
     { titulo: 'Gestionar usuarios', descripcion: 'Administrar clientes registrados y sus perfiles.' },
-    { titulo: 'Gestionar nutricionistas', descripcion: 'Alta, edición o baja de profesionales dentro del sistema.' },
+    { titulo: 'Gestionar nutricionistas', descripcion: 'Alta, edición o baja de profesionales dentro del sistema.', ruta: '/administrador/nutricionistas' },
     { titulo: 'Gestionar rutinas', descripcion: 'Crear, editar o eliminar rutinas de entrenamiento.' },
     { titulo: 'Gestionar planes alimenticios', descripcion: 'Administrar recomendaciones nutricionales disponibles.' },
     { titulo: 'Gestionar planes de pago', descripcion: 'Actualizar planes gratuitos, premium y sus beneficios.' },
@@ -65,7 +66,7 @@ export class DashboardComponent implements OnInit {
     });
 
     const userId = this.usuario()?.id_usuario;
-    if (userId) {
+    if (userId && this.rol === 'usuario') {
       this.usuarioPlanService.getPlanesByUsuario(userId).subscribe({
         next: (misPlanes) => this.misPlanes.set(misPlanes),
         error: () => {},

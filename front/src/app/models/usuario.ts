@@ -34,5 +34,11 @@ export interface RegistroRequest {
   apellido: string;
   email: string;
   contrasena: string;
-  id_rol: number;
+}
+
+export interface NutricionistaRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+  contrasena?: string;
 }

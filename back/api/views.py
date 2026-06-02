@@ -19,6 +19,7 @@ from .permissions import (
 from .serializers import (
     ComidaSerializer,
     LoginSerializer,
+    NutricionistaCreateSerializer,
     PlanComidaReadSerializer,
     PlanComidaSerializer,
     PlanSerializer,
@@ -114,7 +115,31 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'test':
             return [AllowAny()]
+<<<<<<< Updated upstream
         return [IsAdminRole()]
+=======
+        if self.action in ['create', 'crear_nutricionista', 'nutricionistas']:
+            return [IsAdminRole()]
+        if self.action in ['list', 'destroy']:
+            return [IsAdminRole()]
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsSelfOrAdminRole()]
+
+        return [IsAuthenticated()]
+>>>>>>> Stashed changes
+
+    @action(detail=False, methods=['get'])
+    def nutricionistas(self, request):
+        nutricionistas = self.get_queryset().filter(id_rol__nombre_rol='nutricionista')
+        serializer = UsuarioReadSerializer(nutricionistas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='crear-nutricionista')
+    def crear_nutricionista(self, request):
+        serializer = NutricionistaCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        nutricionista = serializer.save()
+        return Response(UsuarioReadSerializer(nutricionista).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def test(self, request):
