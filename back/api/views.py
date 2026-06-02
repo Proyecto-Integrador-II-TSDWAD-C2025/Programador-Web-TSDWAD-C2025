@@ -115,18 +115,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'test':
             return [AllowAny()]
-<<<<<<< Updated upstream
         return [IsAdminRole()]
-=======
-        if self.action in ['create', 'crear_nutricionista', 'nutricionistas']:
-            return [IsAdminRole()]
-        if self.action in ['list', 'destroy']:
-            return [IsAdminRole()]
-        if self.action in ['retrieve', 'update', 'partial_update']:
-            return [IsAuthenticated(), IsSelfOrAdminRole()]
-
-        return [IsAuthenticated()]
->>>>>>> Stashed changes
 
     @action(detail=False, methods=['get'])
     def nutricionistas(self, request):
