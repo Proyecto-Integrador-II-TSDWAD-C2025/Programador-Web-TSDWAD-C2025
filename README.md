@@ -123,26 +123,6 @@ python manage.py createsuperuser
 | PUT | `/api/usuarios/{id}/` | Actualizar usuario |
 | DELETE | `/api/usuarios/{id}/` | Eliminar usuario |
 
-## 📝 Requerimientos
-
-### Requerimientos Funcionales (RF)
-
-| N° | Descripción |
-|----|-------------|
-| RF1 | El sistema debe permitir que un nuevo usuario complete un formulario de registro ingresando nombre, correo electrónico y contraseña; al finalizar, el sistema debe crear la cuenta y redirigir al usuario a la configuración de su perfil. |
-| RF2 | El sistema debe permitir que un usuario registrado inicie sesión con su correo y contraseña; si las credenciales son correctas, el sistema debe mostrar su panel personalizado; si son incorrectas, debe mostrar un mensaje de error descriptivo. |
-| RF3 | El sistema debe permitir que el usuario cree y edite su perfil ingresando datos como edad, peso, altura, nivel de actividad física y objetivos (ej.: perder peso, ganar masa muscular); el sistema debe actualizar las recomendaciones según los cambios guardados. |
-| RF4 | El sistema debe brindar recomendaciones alimenticias basadas en los objetivos del usuario (incluyendo consumo de proteínas y calorías). |
-| RF5 | El sistema debe permitir la gestión de planes de pago para acceder a funciones premium. |
-
-### Requerimientos No Funcionales (RNF)
-
-| N° | Descripción |
-|----|-------------|
-| RNF1 |El sistema debe responder a las solicitudes del usuario en tiempos aceptables bajo carga normal. |
-| RNF2 | El sistema debe proteger los datos personales mediante cifrado y buenas prácticas de gestión de contraseñas. |
-| RNF3 | La interfaz debe ser intuitiva y accesible para usuarios sin conocimientos técnicos.|
-
 ## 🎯 Próximos Pasos
 
 - [ ] Implementar autenticación JWT
