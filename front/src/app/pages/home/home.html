@@ -8,8 +8,11 @@
         <h1>{{ tituloLinea1 }}<br><span class="text-highlight">{{ tituloDestacado }}</span> {{ tituloLinea2 }}</h1>
         <p>{{ descripcion }}</p>
         <div class="d-flex flex-wrap gap-3 mt-4">
-          <a routerLink="/registro" class="btn hero-btn">{{ btnPrimario }}</a>
-          <a routerLink="/planes" class="btn hero-btn hero-btn-secondary">{{ btnSecundario }}</a>
+          @if (isLoggedIn()) {
+            <a routerLink="/dashboard" class="btn hero-btn">Ver mi progreso →</a>
+          } @else {
+            <a routerLink="/registro" class="btn hero-btn">Comenzar ahora →</a>
+          }
         </div>
         <div class="hero-stats mt-5">
           @for (stat of stats; track stat.numero) {
@@ -100,6 +103,8 @@
     <span class="section-tag" style="background: rgba(255,255,255,0.15); color: #fff;">{{ ctaTag }}</span>
     <h2>{{ ctaTitulo }}</h2>
     <p>{{ ctaDescripcion }}</p>
-    <button class="btn cta-btn">{{ ctaBtn }}</button>
+    @if (!isLoggedIn()) {
+      <button class="btn cta-btn">Contactar ahora →</button>
+    }
   </div>
 </section>

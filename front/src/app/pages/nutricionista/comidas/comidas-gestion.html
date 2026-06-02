@@ -118,8 +118,8 @@
                     <td>{{ comida.grasas }} g</td>
                     <td>
                       <div class="gestion-row-actions">
-                        <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(comida)">Editar</button>
-                        <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(comida)">Eliminar</button>
+                        <button type="button" class="gestion-icon-btn" title="Editar" (click)="editar(comida)"><i class="bi bi-pencil-square"></i></button>
+                        <button type="button" class="gestion-icon-btn danger" title="Eliminar" (click)="eliminar(comida)"><i class="bi bi-trash"></i></button>
                       </div>
                     </td>
                   </tr>

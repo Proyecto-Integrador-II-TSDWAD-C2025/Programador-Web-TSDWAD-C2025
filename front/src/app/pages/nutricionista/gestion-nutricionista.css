@@ -236,14 +236,57 @@
   font-size: 0.9rem;
 }
 
+.gestion-table td:has(.gestion-row-actions) {
+  min-width: 120px;
+}
+
 .gestion-table tr:last-child td {
   border-bottom: 0;
 }
 
 .gestion-row-actions {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  white-space: nowrap;
+}
+
+.gestion-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #cbd9cf;
+  border-radius: 6px;
+  background: #fff;
+  color: #34443a;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.gestion-icon-btn:hover {
+  background: #f2f6f3;
+  border-color: #a3b8a9;
+}
+
+.gestion-icon-btn.danger {
+  border-color: #e6b8bd;
+  color: #ad2434;
+}
+
+.gestion-icon-btn.danger:hover {
+  background: #fdecee;
+  border-color: #c83b4a;
+}
+
+.gestion-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .gestion-empty,

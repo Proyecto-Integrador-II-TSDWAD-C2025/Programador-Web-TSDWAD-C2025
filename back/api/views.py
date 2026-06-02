@@ -326,6 +326,11 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = UsuarioReadSerializer(request.user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
     def nutricionistas(self, request):
         nutricionistas = self.get_queryset().filter(id_rol__nombre_rol='nutricionista')
         serializer = UsuarioReadSerializer(nutricionistas, many=True)

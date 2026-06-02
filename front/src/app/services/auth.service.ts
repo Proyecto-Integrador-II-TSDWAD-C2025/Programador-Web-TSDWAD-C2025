@@ -24,49 +24,62 @@ export class AuthService {
         const user: UsuarioRead = JSON.parse(stored);
         this.currentUser.set(user);
         this.isAuthenticated_.set(true);
+        this.refreshUser();
       } catch {
-        localStorage.removeItem('usuario');
-        localStorage.removeItem('auth_token');
+        this.clearSession();
       }
     } else {
-      localStorage.removeItem('usuario');
-      localStorage.removeItem('auth_token');
+      this.clearSession();
     }
   }
 
   login(credentials: LoginRequest): Observable<UsuarioRead> {
     return this.http.post<LoginResponse>(`${API_URL}/login/`, credentials).pipe(
-      tap((response) => this.guardarSesion(response)),
+      tap((response) => this.saveSession(response)),
       map((response) => response.usuario)
     );
   }
 
   registro(data: RegistroRequest): Observable<UsuarioRead> {
     return this.http.post<LoginResponse>(`${API_URL}/register/`, data).pipe(
-      tap((response) => this.guardarSesion(response)),
+      tap((response) => this.saveSession(response)),
       map((response) => response.usuario)
     );
   }
 
   logout(): void {
     this.http.post(`${API_URL}/logout/`, {}).pipe(
-      finalize(() => this.limpiarSesion())
+      finalize(() => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      })
     ).subscribe({ error: () => {} });
   }
 
-  private guardarSesion(response: LoginResponse): void {
+  private saveSession(response: LoginResponse): void {
     this.currentUser.set(response.usuario);
     this.isAuthenticated_.set(true);
     localStorage.setItem('usuario', JSON.stringify(response.usuario));
     localStorage.setItem('auth_token', response.token);
   }
 
-  private limpiarSesion(): void {
+  private refreshUser(): void {
+    this.http.get<UsuarioRead>(`${API_URL}/usuarios/me/`).subscribe({
+      next: (user) => {
+        this.currentUser.set(user);
+        localStorage.setItem('usuario', JSON.stringify(user));
+      },
+      error: () => {
+        this.clearSession();
+      },
+    });
+  }
+
+  private clearSession(): void {
     this.currentUser.set(null);
     this.isAuthenticated_.set(false);
     localStorage.removeItem('usuario');
     localStorage.removeItem('auth_token');
-    this.router.navigate(['/login']);
   }
 
   getRole(): string {
