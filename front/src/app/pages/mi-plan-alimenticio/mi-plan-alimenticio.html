@@ -20,11 +20,25 @@
         <a routerLink="/perfil">Completar perfil</a>
       </div>
     } @else if (respuesta()?.requiere_revision) {
-      <div class="food-state">
-        <span class="food-plan-badge">Revision pendiente</span>
-        <h2>Tu alimentacion necesita una mirada profesional</h2>
-        <p>{{ respuesta()?.mensaje }}</p>
-        <a routerLink="/perfil">Revisar mis datos</a>
+      <div class="food-state animate-fade-in glass-panel px-4 py-5">
+        <div class="stepper-wrapper mb-4">
+          <div class="stepper-item completed">
+            <div class="step-counter"><i class="bi bi-check-lg"></i></div>
+            <div class="step-name">Perfil Completo</div>
+          </div>
+          <div class="stepper-item active">
+            <div class="step-counter"><i class="bi bi-hourglass-split"></i></div>
+            <div class="step-name">Revisión Profesional</div>
+          </div>
+          <div class="stepper-item">
+            <div class="step-counter"><i class="bi bi-journal-medical"></i></div>
+            <div class="step-name">Plan Activo</div>
+          </div>
+        </div>
+        <span class="food-plan-badge text-warning" style="background: rgba(255, 193, 7, 0.2); border-color: rgba(255, 193, 7, 0.4);"><i class="bi bi-shield-exclamation me-1"></i> Requiere supervisión</span>
+        <h2 class="mt-3">Tu alimentación necesita una mirada profesional</h2>
+        <p class="text-secondary">{{ respuesta()?.mensaje }}</p>
+        <a routerLink="/perfil" class="btn-primary-custom mt-3 d-inline-block text-decoration-none"><i class="bi bi-pencil-square me-2"></i>Revisar mis datos</a>
       </div>
     } @else if (respuesta()?.asignacion; as asignacion) {
       <section class="food-overview">
@@ -41,9 +55,29 @@
 
       <div class="food-meta">
         <div><span>Duracion</span><strong>{{ asignacion.plan.duracion_dias }} dias</strong></div>
-        <div><span>Referencia</span><strong>{{ asignacion.plan.calorias_objetivo }} kcal</strong></div>
+        <div>
+          <span>Calorias Objetivo</span>
+          <strong>
+            @if (perfil()?.calorias_objetivo) {
+              {{ perfil()?.calorias_objetivo }} kcal
+            } @else {
+              {{ asignacion.plan.calorias_objetivo }} kcal (Ref)
+            }
+          </strong>
+        </div>
         <div><span>Preferencia</span><strong>{{ asignacion.plan.preferencia_compatible }}</strong></div>
       </div>
+
+      @if (perfil()?.macronutrientes_objetivo; as macros) {
+        <div class="macros-summary">
+          <p class="macros-title">Macronutrientes diarios sugeridos:</p>
+          <div class="macros-row">
+            <span class="macro-badge macro-protein">Proteinas: <strong>{{ macros.proteinas }}g</strong></span>
+            <span class="macro-badge macro-carbs">Carbohidratos: <strong>{{ macros.carbohidratos }}g</strong></span>
+            <span class="macro-badge macro-fat">Grasas: <strong>{{ macros.grasas }}g</strong></span>
+          </div>
+        </div>
+      }
 
       <p class="food-reason">{{ asignacion.motivo }}</p>
 

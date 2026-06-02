@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
+import { DatePipe } from '@angular/common';
 import {
   ActividadPerfil,
   ObjetivoPerfil,
@@ -13,7 +14,7 @@ import { PerfilService } from '../../services/perfil.service';
 
 @Component({
   selector: 'app-perfil',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, DatePipe],
   templateUrl: './perfil.html',
   styleUrl: './perfil.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +29,7 @@ export class Perfil implements OnInit {
   guardando = signal(false);
   mensajeExito = signal('');
   mensajeError = signal('');
+  historialPeso = signal<any[]>([]);
 
   perfilForm = new FormGroup({
     edad: new FormControl<number | null>(null, [Validators.required, Validators.min(13), Validators.max(100)]),
@@ -40,6 +42,7 @@ export class Perfil implements OnInit {
     dias_entrenamiento: new FormControl<number | null>(3, [Validators.required, Validators.min(1), Validators.max(6)]),
     limitaciones: new FormControl('', [Validators.maxLength(500)]),
     consideraciones_alimentarias: new FormControl('', [Validators.maxLength(500)]),
+    sexo: new FormControl<'m' | 'f' | ''>('', [Validators.required]),
   });
 
   ngOnInit(): void {
@@ -58,6 +61,7 @@ export class Perfil implements OnInit {
           dias_entrenamiento: perfil.dias_entrenamiento,
           limitaciones: perfil.limitaciones,
           consideraciones_alimentarias: perfil.consideraciones_alimentarias,
+          sexo: perfil.sexo,
         });
       },
       error: (error) => {
@@ -65,6 +69,17 @@ export class Perfil implements OnInit {
           this.mensajeError.set('No pudimos cargar tu perfil. Intenta nuevamente.');
         }
       },
+    });
+
+    this.cargarHistorialPeso();
+  }
+
+  cargarHistorialPeso(): void {
+    this.perfilService.getHistorialPeso().subscribe({
+      next: (res) => {
+        this.historialPeso.set(res.results || res);
+      },
+      error: () => {}
     });
   }
 
@@ -86,6 +101,7 @@ export class Perfil implements OnInit {
       dias_entrenamiento: datos.dias_entrenamiento!,
       limitaciones: datos.limitaciones ?? '',
       consideraciones_alimentarias: datos.consideraciones_alimentarias ?? '',
+      sexo: datos.sexo as 'm' | 'f',
     };
 
     this.guardando.set(true);
@@ -97,7 +113,17 @@ export class Perfil implements OnInit {
         this.mensajeExito.set(mensaje);
         setTimeout(() => this.router.navigate(['/mi-rutina']), 650);
       },
-      error: () => this.mensajeError.set('Revisa los datos ingresados e intenta nuevamente.'),
+      error: (error) => {
+        console.error('Error al guardar el perfil:', error);
+        if (error.error && typeof error.error === 'object') {
+          const mensajes = Object.entries(error.error)
+            .map(([campo, errores]) => `${campo}: ${Array.isArray(errores) ? errores.join(', ') : errores}`)
+            .join(' | ');
+          this.mensajeError.set(mensajes || 'Revisa los datos ingresados e intenta nuevamente.');
+        } else {
+          this.mensajeError.set(error.error?.detail || 'Revisa los datos ingresados e intenta nuevamente.');
+        }
+      },
     });
   }
 

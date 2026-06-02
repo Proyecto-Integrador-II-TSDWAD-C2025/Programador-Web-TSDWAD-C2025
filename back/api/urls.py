@@ -16,6 +16,7 @@ from .views import (
     ComidaViewSet,
     UsuarioPlanViewSet,
     PlanComidaViewSet,
+    HistorialPesoViewSet,
 )
 
 router = DefaultRouter()
@@ -25,6 +26,7 @@ router.register(r'planes', PlanViewSet)
 router.register(r'comidas', ComidaViewSet)
 router.register(r'usuario-planes', UsuarioPlanViewSet)
 router.register(r'plan-comidas', PlanComidaViewSet)
+router.register(r'historial-peso', HistorialPesoViewSet, basename='historial-peso')
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),

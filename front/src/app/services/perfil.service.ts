@@ -15,4 +15,8 @@ export class PerfilService {
   guardarPerfil(perfil: PerfilPayload): Observable<PerfilResponse> {
     return this.http.put<PerfilResponse>(`${API_URL}/perfil/`, perfil);
   }
+
+  getHistorialPeso(): Observable<any> {
+    return this.http.get<any>(`${API_URL}/historial-peso/`);
+  }
 }

@@ -16,8 +16,10 @@ from .models import (
     Ejercicio,
     UsuarioRutina,
     RegistroEjercicio,
+    HistorialPeso,
 )
 from .permissions import user_has_role
+from .nutrition_recommendations import calcular_requerimientos_nutricionales
 
 
 class RolSerializer(serializers.ModelSerializer):
@@ -234,22 +236,38 @@ class UsuarioPlanDetalleReadSerializer(serializers.ModelSerializer):
 
 
 class PerfilUsuarioSerializer(serializers.ModelSerializer):
+    calorias_objetivo = serializers.SerializerMethodField()
+    macronutrientes_objetivo = serializers.SerializerMethodField()
+
     class Meta:
         model = PerfilUsuario
         exclude = ['id_usuario']
-        read_only_fields = ['id_perfil', 'fecha_actualizacion']
+        read_only_fields = ['id_perfil', 'fecha_actualizacion', 'calorias_objetivo', 'macronutrientes_objetivo']
+
+    def get_calorias_objetivo(self, obj):
+        return calcular_requerimientos_nutricionales(obj)['calorias_objetivo']
+
+    def get_macronutrientes_objetivo(self, obj):
+        reqs = calcular_requerimientos_nutricionales(obj)
+        return {
+            'proteinas': reqs['proteinas_g'],
+            'grasas': reqs['grasas_g'],
+            'carbohidratos': reqs['carbohidratos_g'],
+        }
 
     def validate(self, attrs):
         valores = {
-            'edad': attrs.get('edad', getattr(self.instance, 'edad', None)),
-            'peso_actual': attrs.get('peso_actual', getattr(self.instance, 'peso_actual', None)),
-            'altura_cm': attrs.get('altura_cm', getattr(self.instance, 'altura_cm', None)),
-            'peso_objetivo': attrs.get('peso_objetivo', getattr(self.instance, 'peso_objetivo', None)),
-            'dias_entrenamiento': attrs.get(
+            'edad': float(attrs.get('edad', getattr(self.instance, 'edad', 0)) or 0),
+            'peso_actual': float(attrs.get('peso_actual', getattr(self.instance, 'peso_actual', 0)) or 0),
+            'altura_cm': float(attrs.get('altura_cm', getattr(self.instance, 'altura_cm', 0)) or 0),
+            'peso_objetivo': float(attrs.get('peso_objetivo', getattr(self.instance, 'peso_objetivo', 0)) or 0),
+            'dias_entrenamiento': int(attrs.get(
                 'dias_entrenamiento',
-                getattr(self.instance, 'dias_entrenamiento', None),
-            ),
+                getattr(self.instance, 'dias_entrenamiento', 0),
+            ) or 0),
         }
+        
+        attrs['sexo'] = attrs.get('sexo', getattr(self.instance, 'sexo', 'm'))
 
         rangos = {
             'edad': (13, 100, 'La edad debe estar entre 13 y 100 anos.'),
@@ -269,6 +287,14 @@ class PerfilUsuarioSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errores)
 
         return attrs
+
+
+class HistorialPesoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HistorialPeso
+        fields = ['id_historial', 'id_usuario', 'peso', 'fecha']
+        read_only_fields = ['id_historial', 'id_usuario']
+
 
 
 class EjercicioReadSerializer(serializers.ModelSerializer):
