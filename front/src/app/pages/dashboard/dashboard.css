@@ -132,11 +132,21 @@
   font-size: 1rem;
 }
 
+/* Cards con botones alineados al fondo */
+.opcion {
+  display: flex;
+  flex-direction: column;
+}
+
+.opcion p {
+  flex: 1 1 auto;
+}
+
 /* Botones dentro de cards */
 .opcion button,
 .opcion-link {
   display: block;
-  margin-top: 22px;
+  margin-top: auto;
   background-color: var(--color-primary);
   color: #fff;
   border: none;

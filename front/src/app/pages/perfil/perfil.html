@@ -24,18 +24,16 @@
       <p class="loading-message">Cargando perfil...</p>
     } @else {
       <form [formGroup]="perfilForm" (ngSubmit)="guardar()" class="perfil-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="sexo">Sexo biológico</label>
-            <select id="sexo" formControlName="sexo" [class.is-invalid]="campoInvalido('sexo')">
-              <option value="">Selecciona tu sexo</option>
-              <option value="m">Masculino</option>
-              <option value="f">Femenino</option>
-            </select>
-            @if (campoInvalido('sexo')) {
-              <small class="text-danger">Selecciona tu sexo biológico.</small>
-            }
-          </div>
+        <div class="form-group">
+          <label for="sexo">Sexo biológico</label>
+          <select id="sexo" formControlName="sexo" [class.is-invalid]="campoInvalido('sexo')">
+            <option value="">Selecciona tu sexo</option>
+            <option value="m">Masculino</option>
+            <option value="f">Femenino</option>
+          </select>
+          @if (campoInvalido('sexo')) {
+            <small class="text-danger">Selecciona tu sexo biológico.</small>
+          }
         </div>
 
         <div class="form-row">

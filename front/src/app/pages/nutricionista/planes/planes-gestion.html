@@ -146,9 +146,9 @@
                     <td>{{ plan.calorias_objetivo }} kcal</td>
                     <td>
                       <div class="gestion-row-actions">
-                        <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(plan)">Editar</button>
-                        <a [routerLink]="['/nutricionista/planes', plan.id_plan, 'menu']" class="gestion-button gestion-button-secondary">Menú</a>
-                        <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(plan)">Eliminar</button>
+                        <button type="button" class="gestion-icon-btn" title="Editar" (click)="editar(plan)"><i class="bi bi-pencil-square"></i></button>
+                        <a [routerLink]="['/nutricionista/planes', plan.id_plan, 'menu']" class="gestion-icon-btn" title="Menú"><i class="bi bi-journal-text"></i></a>
+                        <button type="button" class="gestion-icon-btn danger" title="Eliminar" (click)="eliminar(plan)"><i class="bi bi-trash"></i></button>
                       </div>
                     </td>
                   </tr>
