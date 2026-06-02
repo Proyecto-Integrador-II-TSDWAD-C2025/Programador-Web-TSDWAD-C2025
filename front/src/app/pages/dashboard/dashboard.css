@@ -132,11 +132,21 @@
   font-size: 1rem;
 }
 
+/* Cards con botones alineados al fondo */
+.opcion {
+  display: flex;
+  flex-direction: column;
+}
+
+.opcion p {
+  flex: 1 1 auto;
+}
+
 /* Botones dentro de cards */
 .opcion button,
 .opcion-link {
   display: block;
-  margin-top: 22px;
+  margin-top: auto;
   background-color: var(--color-primary);
   color: #fff;
   border: none;
@@ -157,7 +167,6 @@
   transform: translateY(-2px);
 }
 
-<<<<<<< Updated upstream
 /* Responsive - Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .dashboard-container {
@@ -174,16 +183,13 @@
   }
 }
 
-/* Responsive - Mobile grande */
-=======
 .opcion button:disabled {
   background-color: #91a197;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Responsive */
->>>>>>> Stashed changes
+/* Responsive - Mobile grande */
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 110px 20px 30px;
@@ -211,7 +217,6 @@
     grid-template-columns: 1fr;
   }
 }
-<<<<<<< Updated upstream
 
 /* Responsive - Mobile chico */
 @media (max-width: 480px) {
@@ -231,5 +236,57 @@
     font-size: 1.4rem;
   }
 }
-=======
->>>>>>> Stashed changes
+
+/* ── Nuevos Estilos ── */
+.dashboard-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.dashboard-header.glass-panel-dark {
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+}
+
+.card-icon {
+  font-size: 2rem;
+  color: var(--color-primary);
+  margin-bottom: 1rem;
+}
+
+.disabled-card {
+  opacity: 0.75;
+  background: rgba(255, 255, 255, 0.5) !important;
+}
+
+.btn-proximamente {
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+  border: 1px dashed #ced4da !important;
+  font-weight: 600 !important;
+}
+
+.btn-action {
+  background-color: #0d6efd !important;
+}
+.btn-action:hover {
+  background-color: #0b5ed7 !important;
+}
+
+.btn-admin-action {
+  background-color: #dc3545 !important;
+}
+.btn-admin-action:hover {
+  background-color: #bb2d3b !important;
+}

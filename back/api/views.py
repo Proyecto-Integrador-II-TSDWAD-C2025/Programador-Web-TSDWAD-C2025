@@ -1,4 +1,5 @@
 from django.db import connection
+from django.utils import timezone
 from rest_framework import generics, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -9,26 +10,47 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Comida, Plan, PlanComida, Rol, Usuario, UsuarioPlan
+from .models import (
+    Comida,
+    Ejercicio,
+    PerfilUsuario,
+    Plan,
+    PlanComida,
+    RegistroComidaPlan,
+    RegistroEjercicio,
+    Rol,
+    Usuario,
+    UsuarioPlan,
+    UsuarioRutina,
+    HistorialPeso,
+)
 from .permissions import (
     IsAdminOrNutritionistRole,
     IsAdminRole,
     IsAuthenticatedReadOrStaffRoleWrite,
+    IsSelfOrAdminRole,
     user_has_role,
 )
 from .serializers import (
     ComidaSerializer,
     LoginSerializer,
     NutricionistaCreateSerializer,
+    PerfilUsuarioSerializer,
     PlanComidaReadSerializer,
     PlanComidaSerializer,
+    PlanDetalleReadSerializer,
     PlanSerializer,
     RolSerializer,
     UsuarioPlanReadSerializer,
+    UsuarioPlanDetalleReadSerializer,
     UsuarioPlanSerializer,
     UsuarioReadSerializer,
+    UsuarioRutinaReadSerializer,
     UsuarioSerializer,
+    HistorialPesoSerializer,
 )
+from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
+from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
 
 
 class LoginView(GenericAPIView):
@@ -86,6 +108,185 @@ class MeView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+class PerfilView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response({'detail': 'Todavia no completaste tu perfil.'}, status=status.HTTP_404_NOT_FOUND)
+
+        requiere_revision, mensaje = obtener_revision_requerida(perfil)
+        return Response({
+            'perfil': PerfilUsuarioSerializer(perfil).data,
+            'requiere_revision': requiere_revision,
+            'mensaje': mensaje,
+        })
+
+    def put(self, request):
+        import traceback
+        try:
+            perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+            serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            perfil = serializer.save(id_usuario=request.user)
+
+            HistorialPeso.objects.update_or_create(
+                id_usuario=request.user,
+                fecha=timezone.localdate(),
+                defaults={'peso': perfil.peso_actual}
+            )
+
+            asignacion, mensaje = actualizar_rutina_usuario(perfil)
+            plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+
+            return Response({
+                'perfil': PerfilUsuarioSerializer(perfil).data,
+                'requiere_revision': asignacion is None,
+                'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
+                'rutina': (
+                    UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                    if asignacion
+                    else None
+                ),
+                'plan_alimenticio': (
+                    UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
+                    if plan_alimenticio
+                    else None
+                ),
+                'mensaje_plan_alimenticio': mensaje_plan,
+            })
+        except Exception as e:
+            with open("C:/Users/pabli/Desktop/2do Año TSDWAD 2026/Programador-Web-TSDWAD-C2025/back/error.log", "a") as f:
+                f.write(traceback.format_exc() + "\n")
+            raise
+
+
+class MiRutinaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response({'detail': 'Completa tu perfil para obtener una rutina.'}, status=status.HTTP_404_NOT_FOUND)
+
+        asignacion, mensaje = actualizar_rutina_usuario(perfil)
+        return Response({
+            'requiere_revision': asignacion is None,
+            'mensaje': mensaje,
+            'asignacion': (
+                UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                if asignacion
+                else None
+            ),
+        })
+
+
+class CompletarEjercicioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        ejercicio_id = request.data.get('ejercicio_id')
+        asignacion = UsuarioRutina.objects.filter(id_usuario=request.user).first()
+
+        if asignacion is None:
+            return Response({'detail': 'Todavia no tenes una rutina asignada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        ejercicio = Ejercicio.objects.filter(
+            id_ejercicio=ejercicio_id,
+            id_rutina=asignacion.id_rutina,
+        ).first()
+        if ejercicio is None:
+            return Response({'detail': 'El ejercicio no pertenece a tu rutina.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        registro = RegistroEjercicio.objects.filter(
+            id_usuario=request.user,
+            id_ejercicio=ejercicio,
+            fecha=timezone.localdate(),
+        ).first()
+        if registro:
+            registro.delete()
+            completado = False
+        else:
+            RegistroEjercicio.objects.create(id_usuario=request.user, id_ejercicio=ejercicio)
+            completado = True
+
+        return Response({
+            'ejercicio_id': ejercicio.id_ejercicio,
+            'completado_hoy': completado,
+        })
+
+
+class MiPlanAlimenticioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response(
+                {'detail': 'Completa tu perfil para obtener una orientacion alimenticia.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        asignacion, mensaje = actualizar_plan_alimenticio_usuario(perfil)
+        return Response({
+            'requiere_revision': asignacion is None,
+            'mensaje': mensaje,
+            'asignacion': (
+                UsuarioPlanDetalleReadSerializer(asignacion, context={'request': request}).data
+                if asignacion
+                else None
+            ),
+        })
+
+
+class CompletarComidaPlanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        comida_plan_id = request.data.get('plan_comida_id')
+        asignacion = UsuarioPlan.objects.filter(
+            id_usuario=request.user,
+            estado='activo',
+        ).select_related('id_plan').order_by('-origen').first()
+
+        if asignacion is None:
+            return Response(
+                {'detail': 'Todavia no tenes un plan alimenticio asignado.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        comida_plan = PlanComida.objects.filter(
+            id_plan_comida=comida_plan_id,
+            id_plan=asignacion.id_plan,
+        ).first()
+        if comida_plan is None:
+            return Response(
+                {'detail': 'La comida no pertenece a tu plan alimenticio.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        registro = RegistroComidaPlan.objects.filter(
+            id_usuario=request.user,
+            id_plan_comida=comida_plan,
+            fecha=timezone.localdate(),
+        ).first()
+        if registro:
+            registro.delete()
+            completada = False
+        else:
+            RegistroComidaPlan.objects.create(
+                id_usuario=request.user,
+                id_plan_comida=comida_plan,
+            )
+            completada = True
+
+        return Response({
+            'plan_comida_id': comida_plan.id_plan_comida,
+            'completada_hoy': completada,
+        })
+
+
 class RolViewSet(viewsets.ModelViewSet):
     queryset = Rol.objects.order_by('id_rol')
     serializer_class = RolSerializer
@@ -115,7 +316,19 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'test':
             return [AllowAny()]
-        return [IsAdminRole()]
+        if self.action in ['create', 'crear_nutricionista', 'nutricionistas']:
+            return [IsAdminRole()]
+        if self.action in ['list', 'destroy']:
+            return [IsAdminRole()]
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsSelfOrAdminRole()]
+
+        return [IsAuthenticated()]
+
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = UsuarioReadSerializer(request.user)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def nutricionistas(self, request):
@@ -148,20 +361,48 @@ class PlanViewSet(viewsets.ModelViewSet):
     queryset = Plan.objects.order_by('id_plan')
     serializer_class = PlanSerializer
     permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
-    filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['nombre_plan', 'descripcion']
-    ordering_fields = ['id_plan', 'nombre_plan', 'duracion_dias', 'calorias_objetivo']
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['objetivo', 'nivel_actividad', 'activo']
+    search_fields = ['nombre_plan', 'descripcion', 'observaciones']
+    ordering_fields = ['id_plan', 'nombre_plan', 'duracion_dias', 'calorias_objetivo', 'objetivo', 'nivel_actividad', 'activo']
     ordering = ['id_plan']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return PlanDetalleReadSerializer
+
+        return PlanSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if user_has_role(self.request.user, 'administrador', 'nutricionista'):
+            return queryset
+
+        return queryset.filter(activo=True)
 
 
 class ComidaViewSet(viewsets.ModelViewSet):
     queryset = Comida.objects.order_by('id_comida')
     serializer_class = ComidaSerializer
     permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
+    pagination_class = None
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['nombre']
     ordering_fields = ['id_comida', 'nombre', 'calorias']
     ordering = ['id_comida']
+
+
+class HistorialPesoViewSet(viewsets.ModelViewSet):
+    queryset = HistorialPeso.objects.order_by('fecha')
+    serializer_class = HistorialPesoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(id_usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(id_usuario=self.request.user)
 
 
 class UsuarioPlanViewSet(viewsets.ModelViewSet):
@@ -220,5 +461,5 @@ class PlanComidaViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='por-plan/(?P<plan_id>[^/.]+)')
     def por_plan(self, request, plan_id=None):
         comidas = self.queryset.filter(id_plan=plan_id)
-        serializer = PlanComidaReadSerializer(comidas, many=True)
+        serializer = PlanComidaReadSerializer(comidas, many=True, context={'request': request})
         return Response(serializer.data)

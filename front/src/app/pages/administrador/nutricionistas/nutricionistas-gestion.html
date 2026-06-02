@@ -89,8 +89,8 @@
                     <td>{{ nutricionista.fecha_registro }}</td>
                     <td>
                       <div class="gestion-row-actions">
-                        <button type="button" class="gestion-button gestion-button-secondary" (click)="editar(nutricionista)">Editar</button>
-                        <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(nutricionista)">Eliminar</button>
+                        <button type="button" class="gestion-icon-btn" title="Editar" (click)="editar(nutricionista)"><i class="bi bi-pencil-square"></i></button>
+                        <button type="button" class="gestion-icon-btn danger" title="Eliminar" (click)="eliminar(nutricionista)"><i class="bi bi-trash"></i></button>
                       </div>
                     </td>
                   </tr>

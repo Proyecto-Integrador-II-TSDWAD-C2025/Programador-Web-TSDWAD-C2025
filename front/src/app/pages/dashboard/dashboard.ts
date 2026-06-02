@@ -6,6 +6,12 @@ import { PlanService } from '../../services/plan.service';
 import { UsuarioPlanService } from '../../services/usuario-plan.service';
 import { Plan, UsuarioPlan } from '../../models';
 
+interface DashboardOption {
+  titulo: string;
+  descripcion: string;
+  ruta?: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   imports: [CommonModule, RouterLink],
@@ -25,10 +31,10 @@ export class DashboardComponent implements OnInit {
   misPlanes = signal<UsuarioPlan[]>([]);
   cargando = signal(true);
 
-  opcionesCliente = [
-    { titulo: 'Ver mi rutina', descripcion: 'Accedé a tu rutina personalizada según tu objetivo físico.' },
-    { titulo: 'Registrar comida', descripcion: 'Cargá tus comidas diarias para llevar un control alimentario.' },
-    { titulo: 'Ver plan alimenticio', descripcion: 'Consultá recomendaciones de comidas, calorías y proteínas.' },
+  opcionesCliente: DashboardOption[] = [
+    { titulo: 'Ver mi rutina', descripcion: 'Accedé a tu rutina personalizada según tu objetivo físico.', ruta: '/mi-rutina' },
+    { titulo: 'Registrar comida', descripcion: 'Cargá tus comidas diarias para llevar un control alimentario.', ruta: '/mi-plan-alimenticio' },
+    { titulo: 'Ver plan alimenticio', descripcion: 'Consultá recomendaciones de comidas, calorías y proteínas.', ruta: '/mi-plan-alimenticio' },
     { titulo: 'Consultar nutricionista', descripcion: 'Enviá consultas o revisá indicaciones de tu profesional asignado.' },
     { titulo: 'Ver planes premium', descripcion: 'Conocé funciones avanzadas para mejorar tu seguimiento.' },
   ];
@@ -50,6 +56,11 @@ export class DashboardComponent implements OnInit {
   ];
 
   firstName = signal('');
+
+  nombrePlanActual(): string {
+    const plan = this.misPlanes()[0]?.id_plan;
+    return typeof plan === 'number' ? `Plan #${plan}` : plan?.nombre_plan ?? 'Sin plan asignado';
+  }
 
   ngOnInit() {
     const user = this.usuario();

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Plan } from '../../../models';
+import { NivelActividadPlan, ObjetivoPlan, Plan, PreferenciaCompatiblePlan } from '../../../models';
 import { PlanService } from '../../../services/plan.service';
 
 @Component({
@@ -13,6 +13,24 @@ import { PlanService } from '../../../services/plan.service';
 })
 export class PlanesGestion implements OnInit {
   private planService = inject(PlanService);
+
+  objetivos: { value: ObjetivoPlan; label: string }[] = [
+    { value: 'bajar_grasa', label: 'Bajar grasa corporal' },
+    { value: 'mantener_peso', label: 'Mantener peso' },
+    { value: 'aumentar_masa', label: 'Aumentar masa muscular' },
+    { value: 'mejorar_habitos', label: 'Mejorar habitos saludables' },
+  ];
+  nivelesActividad: { value: NivelActividadPlan; label: string }[] = [
+    { value: 'bajo', label: 'Bajo' },
+    { value: 'moderado', label: 'Moderado' },
+    { value: 'alto', label: 'Alto' },
+  ];
+  preferencias: { value: PreferenciaCompatiblePlan; label: string }[] = [
+    { value: 'todas', label: 'Todas las preferencias' },
+    { value: 'vegetariana', label: 'Vegetariana' },
+    { value: 'alta_proteina', label: 'Alta en proteinas' },
+    { value: 'baja_calorias', label: 'Baja en calorias' },
+  ];
 
   planes = signal<Plan[]>([]);
   cargando = signal(true);
@@ -26,6 +44,11 @@ export class PlanesGestion implements OnInit {
     descripcion: new FormControl('', [Validators.required, Validators.maxLength(800)]),
     duracion_dias: new FormControl<number | null>(null, [Validators.required, Validators.min(1), Validators.max(365)]),
     calorias_objetivo: new FormControl<number | null>(null, [Validators.required, Validators.min(500), Validators.max(6000)]),
+    objetivo: new FormControl<ObjetivoPlan | ''>('', [Validators.required]),
+    nivel_actividad: new FormControl<NivelActividadPlan | ''>('', [Validators.required]),
+    preferencia_compatible: new FormControl<PreferenciaCompatiblePlan>('todas', [Validators.required]),
+    observaciones: new FormControl('', [Validators.maxLength(1000)]),
+    activo: new FormControl(true, { nonNullable: true }),
   });
 
   ngOnInit() {
@@ -44,6 +67,11 @@ export class PlanesGestion implements OnInit {
       descripcion: value.descripcion!,
       duracion_dias: value.duracion_dias!,
       calorias_objetivo: String(value.calorias_objetivo),
+      objetivo: value.objetivo as ObjetivoPlan,
+      nivel_actividad: value.nivel_actividad as NivelActividadPlan,
+      preferencia_compatible: value.preferencia_compatible as PreferenciaCompatiblePlan,
+      observaciones: value.observaciones ?? '',
+      activo: value.activo,
     };
     const id = this.planEditando();
     const request = id ? this.planService.updatePlan(id, payload) : this.planService.createPlan(payload);
@@ -52,12 +80,12 @@ export class PlanesGestion implements OnInit {
     this.error.set('');
     request.subscribe({
       next: () => {
-        this.mensaje.set(id ? 'Plan actualizado correctamente.' : 'Plan creado correctamente.');
+        this.mensaje.set(id ? 'Plantilla actualizada correctamente.' : 'Plantilla creada correctamente.');
         this.cancelarEdicion();
         this.cargarPlanes();
       },
       error: () => {
-        this.error.set('No se pudo guardar el plan. Revisá los datos e intentá nuevamente.');
+        this.error.set('No se pudo guardar la plantilla. Revisá los datos e intentá nuevamente.');
         this.guardando.set(false);
       },
     });
@@ -72,20 +100,25 @@ export class PlanesGestion implements OnInit {
       descripcion: plan.descripcion,
       duracion_dias: plan.duracion_dias,
       calorias_objetivo: Number(plan.calorias_objetivo),
+      objetivo: plan.objetivo,
+      nivel_actividad: plan.nivel_actividad,
+      preferencia_compatible: plan.preferencia_compatible,
+      observaciones: plan.observaciones,
+      activo: plan.activo,
     });
   }
 
   eliminar(plan: Plan) {
-    if (!confirm(`¿Eliminar el plan "${plan.nombre_plan}"?`)) {
+    if (!confirm(`¿Eliminar la plantilla "${plan.nombre_plan}"?`)) {
       return;
     }
 
     this.planService.deletePlan(plan.id_plan).subscribe({
       next: () => {
-        this.mensaje.set('Plan eliminado correctamente.');
+        this.mensaje.set('Plantilla eliminada correctamente.');
         this.cargarPlanes();
       },
-      error: () => this.error.set('No se pudo eliminar el plan. Puede estar asignado a un usuario.'),
+      error: () => this.error.set('No se pudo eliminar la plantilla. Puede estar asignada a un usuario.'),
     });
   }
 
@@ -100,6 +133,18 @@ export class PlanesGestion implements OnInit {
     return !!campo && campo.invalid && campo.touched;
   }
 
+  etiquetaObjetivo(objetivo: ObjetivoPlan): string {
+    return this.objetivos.find(opcion => opcion.value === objetivo)?.label ?? objetivo;
+  }
+
+  etiquetaActividad(nivel: NivelActividadPlan): string {
+    return this.nivelesActividad.find(opcion => opcion.value === nivel)?.label ?? nivel;
+  }
+
+  etiquetaPreferencia(preferencia: PreferenciaCompatiblePlan): string {
+    return this.preferencias.find(opcion => opcion.value === preferencia)?.label ?? preferencia;
+  }
+
   private cargarPlanes() {
     this.cargando.set(true);
     this.planService.getPlanes().subscribe({
@@ -108,7 +153,7 @@ export class PlanesGestion implements OnInit {
         this.cargando.set(false);
       },
       error: () => {
-        this.error.set('No se pudieron cargar los planes.');
+        this.error.set('No se pudieron cargar las plantillas.');
         this.cargando.set(false);
         this.guardando.set(false);
       },

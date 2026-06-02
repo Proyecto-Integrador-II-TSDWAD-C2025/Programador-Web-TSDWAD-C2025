@@ -1,0 +1,100 @@
+<section class="gestion-page">
+  <div class="gestion-shell">
+    <header class="gestion-header">
+      <div>
+        <span class="gestion-eyebrow">Panel profesional</span>
+        <h1>Menu de {{ plan()?.nombre_plan ?? 'plantilla' }}</h1>
+        <p>Organiza las comidas por dia, momento y porcion. Las alternativas ayudan a adaptar la orientacion.</p>
+      </div>
+      <a routerLink="/nutricionista/planes" class="gestion-back">Volver a plantillas</a>
+    </header>
+
+    @if (mensaje()) {
+      <p class="gestion-feedback gestion-feedback-success">{{ mensaje() }}</p>
+    }
+    @if (error()) {
+      <p class="gestion-feedback gestion-feedback-error">{{ error() }}</p>
+    }
+
+    @if (cargando()) {
+      <p class="gestion-loading">Cargando menu...</p>
+    } @else {
+      <div class="gestion-grid">
+        <section class="gestion-panel gestion-form-panel">
+          <h2>Agregar comida</h2>
+          <form [formGroup]="menuForm" (ngSubmit)="guardar()" class="gestion-form">
+            <div class="gestion-field">
+              <label for="diaMenu">Dia</label>
+              <input id="diaMenu" type="number" formControlName="dia" [class.is-invalid]="campoInvalido('dia')">
+            </div>
+
+            <div class="gestion-field">
+              <label for="ordenMenu">Orden</label>
+              <input id="ordenMenu" type="number" formControlName="orden" [class.is-invalid]="campoInvalido('orden')">
+            </div>
+
+            <div class="gestion-field">
+              <label for="tipoMenu">Momento</label>
+              <select id="tipoMenu" formControlName="tipo_comida">
+                <option value="desayuno">Desayuno</option>
+                <option value="almuerzo">Almuerzo</option>
+                <option value="merienda">Merienda</option>
+                <option value="cena">Cena</option>
+                <option value="snack">Snack</option>
+              </select>
+            </div>
+
+            <div class="gestion-field">
+              <label for="comidaMenu">Comida</label>
+              <select id="comidaMenu" formControlName="id_comida" [class.is-invalid]="campoInvalido('id_comida')">
+                <option value="">Selecciona una comida</option>
+                @for (comida of comidas(); track comida.id_comida) {
+                  <option [value]="comida.id_comida">{{ comida.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="gestion-field">
+              <label for="porcionMenu">Porcion</label>
+              <input id="porcionMenu" type="text" formControlName="porcion" placeholder="Ej: 1 plato">
+            </div>
+
+            <div class="gestion-field">
+              <label for="alternativaMenu">Alternativa</label>
+              <input id="alternativaMenu" type="text" formControlName="alternativa" placeholder="Opcional">
+            </div>
+
+            <button type="submit" class="gestion-button gestion-button-primary" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando...' : 'Agregar al menu' }}
+            </button>
+          </form>
+        </section>
+
+        <section class="gestion-panel menu-list-panel">
+          <h2>Comidas configuradas</h2>
+          @if (menu().length === 0) {
+            <p class="gestion-empty">Esta plantilla todavia no tiene comidas asociadas.</p>
+          } @else {
+            <div class="menu-days">
+              @for (dia of dias(); track dia) {
+                <section class="menu-day">
+                  <h3>Dia {{ dia }}</h3>
+                  @for (item of comidasDelDia(dia); track item.id_plan_comida) {
+                    <div class="menu-item">
+                      <div>
+                        <span>{{ item.tipo_comida }}</span>
+                        <strong>{{ nombreComida(item) }}</strong>
+                        <small>{{ item.porcion }} @if (item.alternativa) { · Alternativa: {{ item.alternativa }} }</small>
+                      </div>
+                      <button type="button" class="gestion-button gestion-button-danger" (click)="eliminar(item)">Eliminar</button>
+                    </div>
+                  }
+                </section>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    }
+  </div>
+</section>
