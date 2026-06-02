@@ -1,0 +1,51 @@
+<section class="food-plan-page">
+  <div class="food-plan-container">
+    <header class="food-plan-header">
+      <div>
+        <span class="food-plan-badge">Plantilla orientativa</span>
+        <h1>{{ plan()?.nombre_plan ?? 'Detalle del plan' }}</h1>
+        <p>{{ plan()?.descripcion }}</p>
+      </div>
+      <nav class="food-plan-actions">
+        <a routerLink="/planes">Volver a planes</a>
+      </nav>
+    </header>
+
+    @if (cargando()) {
+      <p class="food-state">Cargando plantilla...</p>
+    } @else if (error()) {
+      <p class="food-state food-state-error">{{ error() }}</p>
+    } @else if (plan(); as planActual) {
+      <div class="food-meta">
+        <div><span>Objetivo</span><strong>{{ planActual.objetivo }}</strong></div>
+        <div><span>Duracion</span><strong>{{ planActual.duracion_dias }} dias</strong></div>
+        <div><span>Referencia</span><strong>{{ planActual.calorias_objetivo }} kcal</strong></div>
+      </div>
+
+      @if (planActual.comidas_plan.length === 0) {
+        <p class="food-state">Esta plantilla todavia no tiene un menu configurado.</p>
+      } @else {
+        <div class="food-day-list">
+          @for (dia of dias(); track dia) {
+            <section class="food-day">
+              <header><span>Dia {{ dia }}</span><strong>Ciclo orientativo</strong></header>
+              @for (item of comidasDelDia(dia); track item.id_plan_comida) {
+                <div class="food-row">
+                  <span class="food-time">{{ item.tipo_comida }}</span>
+                  <div>
+                    <strong>{{ nombreComida(item) }}</strong>
+                    <small>{{ item.porcion }} @if (item.alternativa) { · Alternativa: {{ item.alternativa }} }</small>
+                  </div>
+                </div>
+              }
+            </section>
+          }
+        </div>
+      }
+
+      <p class="food-note">
+        Esta plantilla es educativa y orientativa. Un nutricionista puede adaptarla antes de asignarla formalmente.
+      </p>
+    }
+  </div>
+</section>

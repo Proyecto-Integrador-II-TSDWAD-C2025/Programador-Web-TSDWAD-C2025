@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Comida } from '../../../models';
+import { CategoriaComida, Comida } from '../../../models';
 import { ComidaService } from '../../../services/comida.service';
 
 @Component({
@@ -20,9 +20,19 @@ export class ComidasGestion implements OnInit {
   mensaje = signal('');
   error = signal('');
   comidaEditando = signal<number | null>(null);
+  categorias: { value: CategoriaComida; label: string }[] = [
+    { value: 'preparacion', label: 'Preparacion completa' },
+    { value: 'frutas_verduras', label: 'Frutas y verduras' },
+    { value: 'cereales_legumbres', label: 'Cereales y legumbres' },
+    { value: 'proteinas', label: 'Proteinas' },
+    { value: 'lacteos', label: 'Lacteos' },
+    { value: 'grasas_saludables', label: 'Grasas saludables' },
+  ];
 
   comidaForm = new FormGroup({
     nombre: new FormControl('', [Validators.required, Validators.maxLength(100)]),
+    categoria: new FormControl<CategoriaComida>('preparacion', [Validators.required]),
+    porcion_referencia: new FormControl('', [Validators.required, Validators.maxLength(100)]),
     calorias: new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(5000)]),
     proteinas: new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(500)]),
     carbohidratos: new FormControl<number | null>(null, [Validators.required, Validators.min(0), Validators.max(1000)]),
@@ -42,6 +52,8 @@ export class ComidasGestion implements OnInit {
     const value = this.comidaForm.getRawValue();
     const payload = {
       nombre: value.nombre!,
+      categoria: value.categoria as CategoriaComida,
+      porcion_referencia: value.porcion_referencia!,
       calorias: String(value.calorias),
       proteinas: String(value.proteinas),
       carbohidratos: String(value.carbohidratos),
@@ -71,6 +83,8 @@ export class ComidasGestion implements OnInit {
     this.error.set('');
     this.comidaForm.setValue({
       nombre: comida.nombre,
+      categoria: comida.categoria,
+      porcion_referencia: comida.porcion_referencia,
       calorias: Number(comida.calorias),
       proteinas: Number(comida.proteinas),
       carbohidratos: Number(comida.carbohidratos),
@@ -101,6 +115,10 @@ export class ComidasGestion implements OnInit {
   campoInvalido(nombre: string): boolean {
     const campo = this.comidaForm.get(nombre);
     return !!campo && campo.invalid && campo.touched;
+  }
+
+  etiquetaCategoria(categoria: CategoriaComida): string {
+    return this.categorias.find(opcion => opcion.value === categoria)?.label ?? categoria;
   }
 
   private cargarComidas() {

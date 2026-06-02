@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.utils import timezone
 
 
 class Rol(models.Model):
@@ -71,12 +72,83 @@ class Usuario(AbstractUser):
         return f"{self.nombre} {self.apellido}"
 
 
+class PerfilUsuario(models.Model):
+    OBJETIVO_CHOICES = [
+        ('bajar_grasa', 'Bajar grasa corporal'),
+        ('aumentar_masa', 'Aumentar masa muscular'),
+        ('mantener_peso', 'Mantener peso'),
+        ('mejorar_habitos', 'Mejorar habitos saludables'),
+    ]
+    ACTIVIDAD_CHOICES = [
+        ('bajo', 'Bajo'),
+        ('moderado', 'Moderado'),
+        ('alto', 'Alto'),
+    ]
+    PREFERENCIA_CHOICES = [
+        ('sin_preferencia', 'Sin preferencia'),
+        ('vegetariana', 'Vegetariana'),
+        ('alta_proteina', 'Alta en proteinas'),
+        ('baja_calorias', 'Baja en calorias'),
+    ]
+
+    id_perfil = models.AutoField(primary_key=True)
+    id_usuario = models.OneToOneField(
+        Usuario,
+        on_delete=models.CASCADE,
+        db_column='id_usuario',
+        related_name='perfil',
+    )
+    edad = models.PositiveSmallIntegerField()
+    peso_actual = models.DecimalField(max_digits=5, decimal_places=2)
+    altura_cm = models.PositiveSmallIntegerField()
+    peso_objetivo = models.DecimalField(max_digits=5, decimal_places=2)
+    objetivo = models.CharField(max_length=30, choices=OBJETIVO_CHOICES)
+    actividad = models.CharField(max_length=20, choices=ACTIVIDAD_CHOICES)
+    preferencia = models.CharField(max_length=30, choices=PREFERENCIA_CHOICES)
+    dias_entrenamiento = models.PositiveSmallIntegerField(default=3)
+    limitaciones = models.TextField(blank=True)
+    consideraciones_alimentarias = models.TextField(blank=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'PERFIL_USUARIO'
+        verbose_name = 'Perfil de usuario'
+        verbose_name_plural = 'Perfiles de usuario'
+
+    def __str__(self):
+        return f"Perfil de {self.id_usuario}"
+
+
 class Plan(models.Model):
+    OBJETIVO_CHOICES = [
+        ('bajar_grasa', 'Bajar grasa corporal'),
+        ('mantener_peso', 'Mantener peso'),
+        ('aumentar_masa', 'Aumentar masa muscular'),
+        ('mejorar_habitos', 'Mejorar habitos saludables'),
+    ]
+    NIVEL_ACTIVIDAD_CHOICES = [
+        ('bajo', 'Bajo'),
+        ('moderado', 'Moderado'),
+        ('alto', 'Alto'),
+    ]
+    PREFERENCIA_CHOICES = [
+        ('todas', 'Todas'),
+        ('vegetariana', 'Vegetariana'),
+        ('alta_proteina', 'Alta en proteinas'),
+        ('baja_calorias', 'Baja en calorias'),
+    ]
+
     id_plan = models.AutoField(primary_key=True)
+    codigo = models.CharField(max_length=60, unique=True, null=True, blank=True)
     nombre_plan = models.CharField(max_length=100)
     descripcion = models.TextField()
     duracion_dias = models.IntegerField()
     calorias_objetivo = models.DecimalField(max_digits=10, decimal_places=2)
+    objetivo = models.CharField(max_length=30, choices=OBJETIVO_CHOICES, default='mantener_peso')
+    nivel_actividad = models.CharField(max_length=20, choices=NIVEL_ACTIVIDAD_CHOICES, default='moderado')
+    preferencia_compatible = models.CharField(max_length=30, choices=PREFERENCIA_CHOICES, default='todas')
+    observaciones = models.TextField(blank=True)
+    activo = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'PLAN'
@@ -88,8 +160,19 @@ class Plan(models.Model):
 
 
 class Comida(models.Model):
+    CATEGORIA_CHOICES = [
+        ('frutas_verduras', 'Frutas y verduras'),
+        ('cereales_legumbres', 'Cereales y legumbres'),
+        ('proteinas', 'Proteinas'),
+        ('lacteos', 'Lacteos'),
+        ('grasas_saludables', 'Grasas saludables'),
+        ('preparacion', 'Preparacion completa'),
+    ]
+
     id_comida = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
+    categoria = models.CharField(max_length=30, choices=CATEGORIA_CHOICES, default='preparacion')
+    porcion_referencia = models.CharField(max_length=100, default='1 porcion')
     calorias = models.DecimalField(max_digits=10, decimal_places=2)
     proteinas = models.DecimalField(max_digits=10, decimal_places=2)
     carbohidratos = models.DecimalField(max_digits=10, decimal_places=2)
@@ -110,6 +193,10 @@ class UsuarioPlan(models.Model):
         ('inactivo', 'Inactivo'),
         ('completado', 'Completado'),
     ]
+    ORIGEN_CHOICES = [
+        ('orientativo', 'Orientativo'),
+        ('profesional', 'Profesional'),
+    ]
 
     id_usuario_plan = models.AutoField(primary_key=True)
     id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
@@ -117,6 +204,8 @@ class UsuarioPlan(models.Model):
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='activo')
+    origen = models.CharField(max_length=20, choices=ORIGEN_CHOICES, default='profesional')
+    motivo = models.CharField(max_length=255, blank=True)
 
     class Meta:
         db_table = 'USUARIO_PLAN'
@@ -137,14 +226,138 @@ class PlanComida(models.Model):
     ]
 
     id_plan_comida = models.AutoField(primary_key=True)
-    id_plan = models.ForeignKey(Plan, on_delete=models.CASCADE, db_column='id_plan')
+    id_plan = models.ForeignKey(
+        Plan,
+        on_delete=models.CASCADE,
+        db_column='id_plan',
+        related_name='comidas_plan',
+    )
     id_comida = models.ForeignKey(Comida, on_delete=models.CASCADE, db_column='id_comida')
+    dia = models.PositiveSmallIntegerField(default=1)
+    orden = models.PositiveSmallIntegerField(default=1)
     tipo_comida = models.CharField(max_length=20, choices=TIPO_CHOICES)
+    porcion = models.CharField(max_length=100, default='1 porcion')
+    alternativa = models.CharField(max_length=255, blank=True)
 
     class Meta:
         db_table = 'PLAN_COMIDA'
         verbose_name = 'Plan Comida'
         verbose_name_plural = 'Planes Comidas'
+        ordering = ['dia', 'orden']
 
     def __str__(self):
-        return f"{self.id_plan} - {self.id_comida} ({self.tipo_comida})"
+        return f"{self.id_plan} - Dia {self.dia}: {self.id_comida} ({self.tipo_comida})"
+
+
+class RegistroComidaPlan(models.Model):
+    id_registro_comida = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
+    id_plan_comida = models.ForeignKey(PlanComida, on_delete=models.CASCADE, db_column='id_plan_comida')
+    fecha = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        db_table = 'REGISTRO_COMIDA_PLAN'
+        verbose_name = 'Registro de comida del plan'
+        verbose_name_plural = 'Registros de comidas del plan'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['id_usuario', 'id_plan_comida', 'fecha'],
+                name='registro_comida_plan_unico_por_dia',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.id_usuario} - {self.id_plan_comida} - {self.fecha}"
+
+
+class Rutina(models.Model):
+    NIVEL_CHOICES = [
+        ('inicial', 'Inicial'),
+        ('intermedio', 'Intermedio'),
+    ]
+
+    id_rutina = models.AutoField(primary_key=True)
+    codigo = models.CharField(max_length=50, unique=True)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField()
+    objetivo = models.CharField(max_length=30, choices=PerfilUsuario.OBJETIVO_CHOICES)
+    nivel = models.CharField(max_length=20, choices=NIVEL_CHOICES)
+    dias_por_semana = models.PositiveSmallIntegerField()
+    duracion_semanas = models.PositiveSmallIntegerField(default=4)
+    activa = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'RUTINA'
+        verbose_name = 'Rutina'
+        verbose_name_plural = 'Rutinas'
+
+    def __str__(self):
+        return self.nombre
+
+
+class Ejercicio(models.Model):
+    id_ejercicio = models.AutoField(primary_key=True)
+    id_rutina = models.ForeignKey(
+        Rutina,
+        on_delete=models.CASCADE,
+        db_column='id_rutina',
+        related_name='ejercicios',
+    )
+    dia = models.PositiveSmallIntegerField()
+    orden = models.PositiveSmallIntegerField(default=1)
+    nombre = models.CharField(max_length=100)
+    descripcion = models.CharField(max_length=255, blank=True)
+    series = models.PositiveSmallIntegerField(null=True, blank=True)
+    repeticiones = models.CharField(max_length=30, blank=True)
+    duracion_minutos = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'EJERCICIO'
+        verbose_name = 'Ejercicio'
+        verbose_name_plural = 'Ejercicios'
+        ordering = ['dia', 'orden']
+
+    def __str__(self):
+        return f"{self.id_rutina.nombre} - Dia {self.dia}: {self.nombre}"
+
+
+class UsuarioRutina(models.Model):
+    id_usuario_rutina = models.AutoField(primary_key=True)
+    id_usuario = models.OneToOneField(
+        Usuario,
+        on_delete=models.CASCADE,
+        db_column='id_usuario',
+        related_name='rutina_asignada',
+    )
+    id_rutina = models.ForeignKey(Rutina, on_delete=models.PROTECT, db_column='id_rutina')
+    motivo = models.CharField(max_length=255)
+    fecha_asignacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'USUARIO_RUTINA'
+        verbose_name = 'Usuario rutina'
+        verbose_name_plural = 'Usuarios rutinas'
+
+    def __str__(self):
+        return f"{self.id_usuario} - {self.id_rutina}"
+
+
+class RegistroEjercicio(models.Model):
+    id_registro_ejercicio = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='id_usuario')
+    id_ejercicio = models.ForeignKey(Ejercicio, on_delete=models.CASCADE, db_column='id_ejercicio')
+    fecha = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        db_table = 'REGISTRO_EJERCICIO'
+        verbose_name = 'Registro de ejercicio'
+        verbose_name_plural = 'Registros de ejercicios'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['id_usuario', 'id_ejercicio', 'fecha'],
+                name='registro_ejercicio_unico_por_dia',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.id_usuario} - {self.id_ejercicio} - {self.fecha}"

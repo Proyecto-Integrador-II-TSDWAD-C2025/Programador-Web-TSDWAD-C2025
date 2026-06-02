@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { API_URL } from './api.config';
-import { Plan } from '../models';
+import { Plan, PlanDetalle } from '../models';
 
 interface PaginatedResponse<T> {
   count: number;
@@ -22,15 +22,15 @@ export class PlanService {
     );
   }
 
-  getPlan(id: number): Observable<Plan> {
-    return this.http.get<Plan>(`${API_URL}/planes/${id}/`);
+  getPlan(id: number): Observable<PlanDetalle> {
+    return this.http.get<PlanDetalle>(`${API_URL}/planes/${id}/`);
   }
 
-  createPlan(plan: Omit<Plan, 'id_plan'>): Observable<Plan> {
+  createPlan(plan: Omit<Plan, 'id_plan' | 'codigo'> & { codigo?: string | null }): Observable<Plan> {
     return this.http.post<Plan>(`${API_URL}/planes/`, plan);
   }
 
-  updatePlan(id: number, plan: Omit<Plan, 'id_plan'>): Observable<Plan> {
+  updatePlan(id: number, plan: Omit<Plan, 'id_plan' | 'codigo'> & { codigo?: string | null }): Observable<Plan> {
     return this.http.put<Plan>(`${API_URL}/planes/${id}/`, plan);
   }
 

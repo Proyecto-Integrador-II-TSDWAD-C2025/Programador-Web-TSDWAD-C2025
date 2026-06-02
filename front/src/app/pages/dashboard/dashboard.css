@@ -157,7 +157,6 @@
   transform: translateY(-2px);
 }
 
-<<<<<<< Updated upstream
 /* Responsive - Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .dashboard-container {
@@ -174,16 +173,13 @@
   }
 }
 
-/* Responsive - Mobile grande */
-=======
 .opcion button:disabled {
   background-color: #91a197;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Responsive */
->>>>>>> Stashed changes
+/* Responsive - Mobile grande */
 @media (max-width: 768px) {
   .dashboard-container {
     padding: 110px 20px 30px;
@@ -211,7 +207,6 @@
     grid-template-columns: 1fr;
   }
 }
-<<<<<<< Updated upstream
 
 /* Responsive - Mobile chico */
 @media (max-width: 480px) {
@@ -231,5 +226,3 @@
     font-size: 1.4rem;
   }
 }
-=======
->>>>>>> Stashed changes

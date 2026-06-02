@@ -94,7 +94,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 13px 15px;
   border-radius: 14px;
@@ -106,13 +107,15 @@
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
 }
 
 .form-group input.is-invalid,
-.form-group select.is-invalid {
+.form-group select.is-invalid,
+.form-group textarea.is-invalid {
   border-color: #dc3545;
 }
 
@@ -138,6 +141,12 @@
   background-color: var(--color-primary-mid);
   color: #fff;
   transform: translateY(-2px);
+}
+
+.btn-perfil:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 .exito-message {
@@ -167,8 +176,31 @@
   .form-row {
     grid-template-columns: 1fr;
   }
-<<<<<<< Updated upstream
-  /* Responsive - Tablet */
+}
+
+.error-message {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #a81f2c;
+  border: 1px solid rgba(220, 53, 69, 0.24);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.loading-message {
+  color: #4d5a52;
+  font-weight: 700;
+  margin: 12px 0 0;
+}
+
+.field-help {
+  color: #65736b;
+  line-height: 1.45;
+}
+
+/* Responsive - Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
   .perfil-page {
     padding: 120px 30px 40px;
@@ -179,7 +211,3 @@
     padding: 32px;
   }
 }
-}
-=======
-}
->>>>>>> Stashed changes

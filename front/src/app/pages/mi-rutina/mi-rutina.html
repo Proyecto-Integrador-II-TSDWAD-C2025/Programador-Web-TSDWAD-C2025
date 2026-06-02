@@ -1,0 +1,96 @@
+<section class="rutina-page">
+  <div class="rutina-container">
+    <header class="rutina-header">
+      <div>
+        <span class="rutina-badge">Seguimiento semanal</span>
+        <h1>Mi rutina</h1>
+        <p>Una propuesta inicial basada en los datos de tu perfil.</p>
+      </div>
+
+      <nav class="rutina-actions" aria-label="Acciones de rutina">
+        <a routerLink="/perfil">Editar perfil</a>
+        <a routerLink="/dashboard">Volver al panel</a>
+      </nav>
+    </header>
+
+    @if (cargando()) {
+      <p class="state-message">Cargando rutina...</p>
+    } @else if (mensajeError()) {
+      <div class="state-panel state-panel-error">
+        <p>{{ mensajeError() }}</p>
+        <a routerLink="/perfil">Completar perfil</a>
+      </div>
+    } @else if (respuesta()?.requiere_revision) {
+      <div class="state-panel">
+        <span class="state-label">Revision pendiente</span>
+        <h2>Tu rutina necesita una mirada profesional</h2>
+        <p>{{ respuesta()?.mensaje }}</p>
+        <a routerLink="/perfil">Revisar mis datos</a>
+      </div>
+    } @else if (respuesta()?.asignacion; as asignacion) {
+      <section class="rutina-overview">
+        <div>
+          <span class="state-label">Rutina recomendada</span>
+          <h2>{{ asignacion.rutina.nombre }}</h2>
+          <p>{{ asignacion.rutina.descripcion }}</p>
+        </div>
+
+        <div class="progress-summary">
+          <strong>{{ ejerciciosCompletados() }}/{{ totalEjercicios() }}</strong>
+          <span>ejercicios marcados hoy</span>
+        </div>
+      </section>
+
+      <div class="routine-meta">
+        <div>
+          <span>Nivel</span>
+          <strong>{{ asignacion.rutina.nivel }}</strong>
+        </div>
+        <div>
+          <span>Frecuencia</span>
+          <strong>{{ asignacion.rutina.dias_por_semana }} dias por semana</strong>
+        </div>
+        <div>
+          <span>Duracion sugerida</span>
+          <strong>{{ asignacion.rutina.duracion_semanas }} semanas</strong>
+        </div>
+      </div>
+
+      <p class="recommendation-reason">{{ asignacion.motivo }}</p>
+
+      <div class="day-list">
+        @for (dia of dias(); track dia) {
+          <section class="day-panel">
+            <header>
+              <span>Dia {{ dia }}</span>
+              <strong>{{ ejerciciosDelDia(dia).length }} ejercicios</strong>
+            </header>
+
+            <div class="exercise-list">
+              @for (ejercicio of ejerciciosDelDia(dia); track ejercicio.id_ejercicio) {
+                <label class="exercise-row" [class.exercise-completed]="ejercicio.completado_hoy">
+                  <input
+                    type="checkbox"
+                    [checked]="ejercicio.completado_hoy"
+                    [disabled]="actualizando() === ejercicio.id_ejercicio"
+                    (change)="alternarEjercicio(ejercicio.id_ejercicio)"
+                  >
+                  <span class="exercise-check" aria-hidden="true"></span>
+                  <span class="exercise-content">
+                    <strong>{{ ejercicio.nombre }}</strong>
+                    <small>{{ ejercicio.descripcion }}</small>
+                  </span>
+                  <span class="exercise-detail">{{ detalleEjercicio(ejercicio) }}</span>
+                </label>
+              }
+            </div>
+          </section>
+        }
+      </div>
+
+      <p class="routine-note">
+        Esta es una orientacion general para el prototipo. Detene la actividad y consulta a un profesional si sentis dolor o malestar.
+      </p>
+    }
+  </div>
+</section>
