@@ -176,4 +176,38 @@
   .about-section h2 {
     font-size: 1.6rem;
   }
+  /* Responsive - Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .about-page {
+    padding: 120px 30px 40px;
+  }
+
+  .about-hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .about-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .services-grid,
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Responsive - Mobile chico */
+@media (max-width: 480px) {
+  .about-page {
+    padding: 90px 16px 30px;
+  }
+
+  .about-hero h1 {
+    font-size: 1.8rem;
+  }
+
+  .about-section {
+    padding: 20px 16px;
+  }
+}
 }
