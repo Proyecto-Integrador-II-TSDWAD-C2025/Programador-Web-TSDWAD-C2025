@@ -17,7 +17,7 @@
       <ul class="navbar-nav">
         @if (!isLoggedIn() || rol() === 'usuario') {
           <li class="nav-item">
-            <a class="nav-link" routerLink="/" (click)="closeMenu()">Inicio</a>
+            <a class="nav-link" routerLink="/" (click)="closeMenu(); scrollToTop()">Inicio</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" routerLink="/planes" (click)="closeMenu()">Planes</a>

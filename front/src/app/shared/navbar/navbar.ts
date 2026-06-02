@@ -27,6 +27,10 @@ export class Navbar {
     this.menuOpen.set(false);
   }
 
+  scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   logout() {
     this.authService.logout();
   }
