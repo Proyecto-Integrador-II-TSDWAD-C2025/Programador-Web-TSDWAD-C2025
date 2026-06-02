@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ChangeDetectionStrategy } from '@angular/core';
@@ -16,6 +16,7 @@ export class Navbar {
 
   usuario = this.authService.usuario;
   isLoggedIn = this.authService.isLoggedIn;
+  rol = computed(() => this.usuario()?.id_rol?.nombre_rol ?? '');
   menuOpen = signal(false);
 
   toggleMenu() {

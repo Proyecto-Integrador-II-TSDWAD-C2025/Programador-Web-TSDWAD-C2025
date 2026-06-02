@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MiPlanAlimenticioResponse, PlanComida } from '../../models';
+import { MiPlanAlimenticioResponse, PlanComida, PerfilUsuario } from '../../models';
 import { PlanAlimenticioService } from '../../services/plan-alimenticio.service';
+import { PerfilService } from '../../services/perfil.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-mi-plan-alimenticio',
@@ -12,14 +14,17 @@ import { PlanAlimenticioService } from '../../services/plan-alimenticio.service'
 })
 export class MiPlanAlimenticio implements OnInit {
   private planAlimenticioService = inject(PlanAlimenticioService);
+  private perfilService = inject(PerfilService);
 
   respuesta = signal<MiPlanAlimenticioResponse | null>(null);
+  perfil = signal<PerfilUsuario | null>(null);
   cargando = signal(true);
   error = signal('');
   actualizando = signal<number | null>(null);
 
   ngOnInit(): void {
     this.cargarPlan();
+    this.cargarPerfil();
   }
 
   dias(): number[] {
@@ -66,8 +71,26 @@ export class MiPlanAlimenticio implements OnInit {
           };
         });
         this.actualizando.set(null);
+        
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
+        Toast.fire({
+          icon: completada_hoy ? 'success' : 'info',
+          title: completada_hoy ? '¡Comida registrada!' : 'Registro deshecho'
+        });
       },
       error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'No pudimos actualizar la comida. Intenta nuevamente.',
+          confirmButtonColor: '#2d7a3a'
+        });
         this.error.set('No pudimos actualizar la comida. Intenta nuevamente.');
         this.actualizando.set(null);
       },
@@ -81,13 +104,30 @@ export class MiPlanAlimenticio implements OnInit {
         this.cargando.set(false);
       },
       error: (error) => {
-        this.error.set(
-          error.status === 404
+        const msg = error.status === 404
             ? 'Completa tu perfil para obtener una orientacion alimenticia.'
-            : 'No pudimos cargar tu plan alimenticio.'
-        );
+            : 'No pudimos cargar tu plan alimenticio.';
+        this.error.set(msg);
         this.cargando.set(false);
+        
+        if (error.status === 404) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Perfil Incompleto',
+            text: msg,
+            confirmButtonColor: '#2d7a3a'
+          });
+        }
       },
+    });
+  }
+
+  private cargarPerfil(): void {
+    this.perfilService.getPerfil().subscribe({
+      next: ({ perfil }) => {
+        this.perfil.set(perfil);
+      },
+      error: () => {}
     });
   }
 }

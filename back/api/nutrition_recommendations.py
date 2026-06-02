@@ -87,3 +87,61 @@ def actualizar_plan_alimenticio_usuario(perfil):
         origen='orientativo',
     ).exclude(id_usuario_plan=asignacion.id_usuario_plan).delete()
     return asignacion, ''
+
+
+def calcular_requerimientos_nutricionales(perfil):
+    """
+    Calcula calorías y macronutrientes objetivos en base al perfil individual.
+    Utiliza la ecuación de Mifflin-St Jeor.
+    """
+    peso = float(perfil.peso_actual)
+    altura = float(perfil.altura_cm)
+    edad = int(perfil.edad)
+    sexo = perfil.sexo  # 'm' o 'f'
+
+    # 1. Tasa Metabólica Basal (BMR)
+    if sexo == 'f':
+        bmr = (10 * peso) + (6.25 * altura) - (5 * edad) - 161
+    else:
+        bmr = (10 * peso) + (6.25 * altura) - (5 * edad) + 5
+
+    # 2. Factor de actividad
+    factores_actividad = {
+        'bajo': 1.2,        # Sedentario / poco ejercicio
+        'moderado': 1.375,   # Ejercicio moderado 3-5 días/semana
+        'alto': 1.55,       # Ejercicio intenso 6-7 días/semana
+    }
+    factor = factores_actividad.get(perfil.actividad, 1.2)
+    tdee = bmr * factor
+
+    # 3. Ajuste por objetivo físico
+    if perfil.objetivo == 'bajar_grasa':
+        calorias_objetivo = tdee - 500  # Déficit moderado
+    elif perfil.objetivo == 'aumentar_masa':
+        calorias_objetivo = tdee + 300  # Superávit controlado
+    else:
+        calorias_objetivo = tdee        # Mantenimiento
+
+    # Límites de seguridad biológica
+    limite_minimo = 1200 if sexo == 'f' else 1500
+    calorias_objetivo = max(calorias_objetivo, limite_minimo)
+
+    # 4. Distribución de Macronutrientes (Proteínas, Grasas y Carbohidratos)
+    if perfil.objetivo == 'aumentar_masa':
+        prot_g = 2.0 * peso
+    elif perfil.objetivo == 'bajar_grasa':
+        prot_g = 1.8 * peso
+    else:
+        prot_g = 1.5 * peso
+
+    grasas_g = (calorias_objetivo * 0.25) / 9
+    calorias_restantes = calorias_objetivo - (prot_g * 4) - (grasas_g * 9)
+    carbs_g = max(calorias_restantes / 4, 50)
+
+    return {
+        'calorias_objetivo': round(calorias_objetivo),
+        'proteinas_g': round(prot_g),
+        'grasas_g': round(grasas_g),
+        'carbohidratos_g': round(carbs_g),
+    }
+

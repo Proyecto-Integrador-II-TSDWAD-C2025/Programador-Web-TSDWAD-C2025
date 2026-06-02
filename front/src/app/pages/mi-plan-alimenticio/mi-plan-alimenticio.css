@@ -289,3 +289,57 @@
     grid-column: 2;
   }
 }
+
+.macros-summary {
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.macros-title {
+  margin: 0 0 10px;
+  color: #24342a;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.macros-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.macro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.macro-badge strong {
+  font-weight: 800;
+}
+
+.macro-protein {
+  color: #1e3a8a;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.macro-carbs {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.macro-fat {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+

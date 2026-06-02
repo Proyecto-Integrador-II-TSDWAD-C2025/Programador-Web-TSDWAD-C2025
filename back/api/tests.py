@@ -1,4 +1,6 @@
+from datetime import timedelta
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from .models import (
@@ -11,6 +13,7 @@ from .models import (
     Usuario,
     UsuarioPlan,
     UsuarioRutina,
+    HistorialPeso,
 )
 
 
@@ -395,3 +398,62 @@ class PlanAlimenticioRecomendadoTestCase(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertIn('dia', response.data)
+
+
+class ReqNutricionalesYHistorialTestCase(TestCase):
+    """Test cases para el cálculo de requerimientos nutricionales e historial de peso."""
+
+    def setUp(self):
+        self.rol_usuario = Rol.objects.filter(nombre_rol='usuario').first() or Rol.objects.create(nombre_rol='usuario')
+        self.usuario = Usuario.objects.create_user(
+            email='test.calculos@example.com',
+            password='ClaveSegura123!',
+            nombre='Test',
+            apellido='Calculos',
+            id_rol=self.rol_usuario,
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.usuario)
+        self.perfil_data = {
+            'edad': 25,
+            'peso_actual': '70.00',
+            'altura_cm': 175,
+            'peso_objetivo': '65.00',
+            'objetivo': 'bajar_grasa',
+            'actividad': 'moderado',
+            'preferencia': 'sin_preferencia',
+            'dias_entrenamiento': 3,
+            'limitaciones': '',
+            'consideraciones_alimentarias': '',
+            'sexo': 'f'  # Femenino
+        }
+
+    def test_calculos_nutricionales_femenino(self):
+        # Para mujer, 25 años, 70kg, 175cm, moderado, bajar_grasa:
+        # BMR = 10*70 + 6.25*175 - 5*25 - 161 = 700 + 1093.75 - 125 - 161 = 1507.75
+        # TDEE = 1507.75 * 1.375 = 2073.15625
+        # Calorías = 2073.15625 - 500 = 1573.15625 (round: 1573)
+        # Proteínas = 1.8 * 70 = 126
+        # Grasas = 1573 * 0.25 / 9 = 43.69 (round: 44)
+        response = self.client.put('/api/perfil/', self.perfil_data)
+        self.assertEqual(response.status_code, 200)
+        perfil = response.data['perfil']
+        self.assertEqual(perfil['calorias_objetivo'], 1573)
+        self.assertEqual(perfil['macronutrientes_objetivo']['proteinas'], 126)
+        self.assertEqual(perfil['macronutrientes_objetivo']['grasas'], 44)
+
+    def test_guardar_perfil_crea_historial_peso(self):
+        response = self.client.put('/api/perfil/', self.perfil_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(HistorialPeso.objects.filter(id_usuario=self.usuario, peso=70.00).exists())
+
+    def test_historial_peso_api(self):
+        # Crear entrada
+        HistorialPeso.objects.create(id_usuario=self.usuario, peso=72.50, fecha=timezone.localdate() - timedelta(days=1))
+        HistorialPeso.objects.create(id_usuario=self.usuario, peso=70.00, fecha=timezone.localdate())
+
+        response = self.client.get('/api/historial-peso/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(float(response.data['results'][0]['peso']), 72.50)
+

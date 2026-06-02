@@ -90,6 +90,10 @@ class PerfilUsuario(models.Model):
         ('alta_proteina', 'Alta en proteinas'),
         ('baja_calorias', 'Baja en calorias'),
     ]
+    SEXO_CHOICES = [
+        ('m', 'Masculino'),
+        ('f', 'Femenino'),
+    ]
 
     id_perfil = models.AutoField(primary_key=True)
     id_usuario = models.OneToOneField(
@@ -98,6 +102,7 @@ class PerfilUsuario(models.Model):
         db_column='id_usuario',
         related_name='perfil',
     )
+    sexo = models.CharField(max_length=1, choices=SEXO_CHOICES, default='m')
     edad = models.PositiveSmallIntegerField()
     peso_actual = models.DecimalField(max_digits=5, decimal_places=2)
     altura_cm = models.PositiveSmallIntegerField()
@@ -361,3 +366,30 @@ class RegistroEjercicio(models.Model):
 
     def __str__(self):
         return f"{self.id_usuario} - {self.id_ejercicio} - {self.fecha}"
+
+
+class HistorialPeso(models.Model):
+    id_historial = models.AutoField(primary_key=True)
+    id_usuario = models.ForeignKey(
+        Usuario,
+        on_delete=models.CASCADE,
+        related_name='historial_peso',
+        db_column='id_usuario',
+    )
+    peso = models.DecimalField(max_digits=5, decimal_places=2)
+    fecha = models.DateField(default=timezone.localdate)
+
+    class Meta:
+        db_table = 'HISTORIAL_PESO'
+        verbose_name = 'Historial de peso'
+        verbose_name_plural = 'Historiales de peso'
+        ordering = ['fecha']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['id_usuario', 'fecha'],
+                name='peso_unico_por_dia',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.id_usuario} - {self.peso} kg el {self.fecha}"

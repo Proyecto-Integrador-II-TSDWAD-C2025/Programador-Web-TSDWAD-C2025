@@ -22,6 +22,7 @@ from .models import (
     Usuario,
     UsuarioPlan,
     UsuarioRutina,
+    HistorialPeso,
 )
 from .permissions import (
     IsAdminOrNutritionistRole,
@@ -46,6 +47,7 @@ from .serializers import (
     UsuarioReadSerializer,
     UsuarioRutinaReadSerializer,
     UsuarioSerializer,
+    HistorialPesoSerializer,
 )
 from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
 from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
@@ -122,29 +124,42 @@ class PerfilView(APIView):
         })
 
     def put(self, request):
-        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
-        serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        perfil = serializer.save(id_usuario=request.user)
-        asignacion, mensaje = actualizar_rutina_usuario(perfil)
-        plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+        import traceback
+        try:
+            perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+            serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            perfil = serializer.save(id_usuario=request.user)
 
-        return Response({
-            'perfil': PerfilUsuarioSerializer(perfil).data,
-            'requiere_revision': asignacion is None,
-            'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
-            'rutina': (
-                UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
-                if asignacion
-                else None
-            ),
-            'plan_alimenticio': (
-                UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
-                if plan_alimenticio
-                else None
-            ),
-            'mensaje_plan_alimenticio': mensaje_plan,
-        })
+            HistorialPeso.objects.update_or_create(
+                id_usuario=request.user,
+                fecha=timezone.localdate(),
+                defaults={'peso': perfil.peso_actual}
+            )
+
+            asignacion, mensaje = actualizar_rutina_usuario(perfil)
+            plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+
+            return Response({
+                'perfil': PerfilUsuarioSerializer(perfil).data,
+                'requiere_revision': asignacion is None,
+                'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
+                'rutina': (
+                    UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                    if asignacion
+                    else None
+                ),
+                'plan_alimenticio': (
+                    UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
+                    if plan_alimenticio
+                    else None
+                ),
+                'mensaje_plan_alimenticio': mensaje_plan,
+            })
+        except Exception as e:
+            with open("C:/Users/pabli/Desktop/2do Año TSDWAD 2026/Programador-Web-TSDWAD-C2025/back/error.log", "a") as f:
+                f.write(traceback.format_exc() + "\n")
+            raise
 
 
 class MiRutinaView(APIView):
@@ -371,6 +386,18 @@ class ComidaViewSet(viewsets.ModelViewSet):
     search_fields = ['nombre']
     ordering_fields = ['id_comida', 'nombre', 'calorias']
     ordering = ['id_comida']
+
+
+class HistorialPesoViewSet(viewsets.ModelViewSet):
+    queryset = HistorialPeso.objects.order_by('fecha')
+    serializer_class = HistorialPesoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(id_usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(id_usuario=self.request.user)
 
 
 class UsuarioPlanViewSet(viewsets.ModelViewSet):

@@ -13,6 +13,7 @@ export interface PerfilPayload {
   dias_entrenamiento: number;
   limitaciones: string;
   consideraciones_alimentarias: string;
+  sexo: 'm' | 'f';
 }
 
 export interface PerfilUsuario extends Omit<PerfilPayload, 'peso_actual' | 'peso_objetivo'> {
@@ -20,6 +21,12 @@ export interface PerfilUsuario extends Omit<PerfilPayload, 'peso_actual' | 'peso
   peso_actual: string;
   peso_objetivo: string;
   fecha_actualizacion: string;
+  calorias_objetivo?: number;
+  macronutrientes_objetivo?: {
+    proteinas: number;
+    grasas: number;
+    carbohidratos: number;
+  };
 }
 
 export interface PerfilResponse {

@@ -33,7 +33,10 @@ def actualizar_rutina_usuario(perfil):
         UsuarioRutina.objects.filter(id_usuario=perfil.id_usuario).delete()
         return None, mensaje
 
-    rutina = Rutina.objects.get(codigo=obtener_codigo_rutina(perfil), activa=True)
+    rutina = Rutina.objects.filter(codigo=obtener_codigo_rutina(perfil), activa=True).first()
+    if rutina is None:
+        return None, 'Todavia no hay una rutina de entrenamiento compatible con tu perfil.'
+
     motivo = (
         f'Seleccion automatica segun objetivo {perfil.get_objetivo_display().lower()}, '
         f'nivel de actividad {perfil.get_actividad_display().lower()} y '
