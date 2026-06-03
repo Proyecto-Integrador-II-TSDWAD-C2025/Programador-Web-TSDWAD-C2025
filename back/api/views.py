@@ -1,70 +1,356 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
 from django.db import connection
+from django.utils import timezone
+from rest_framework import generics, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import Rol, Usuario, Plan, Comida, UsuarioPlan, PlanComida
-from .serializers import (
-    RolSerializer,
-    UsuarioSerializer, UsuarioReadSerializer,
-    PlanSerializer,
-    ComidaSerializer,
-    UsuarioPlanSerializer, UsuarioPlanReadSerializer,
-    PlanComidaSerializer, PlanComidaReadSerializer,
+from .models import (
+    Comida,
+    Ejercicio,
+    PerfilUsuario,
+    Plan,
+    PlanComida,
+    RegistroComidaPlan,
+    RegistroEjercicio,
+    Rol,
+    Usuario,
+    UsuarioPlan,
+    UsuarioRutina,
+    HistorialPeso,
 )
+from .permissions import (
+    IsAdminOrNutritionistRole,
+    IsAdminRole,
+    IsAuthenticatedReadOrStaffRoleWrite,
+    IsSelfOrAdminRole,
+    user_has_role,
+)
+from .serializers import (
+    ComidaSerializer,
+    LoginSerializer,
+    NutricionistaCreateSerializer,
+    PerfilUsuarioSerializer,
+    PlanComidaReadSerializer,
+    PlanComidaSerializer,
+    PlanDetalleReadSerializer,
+    PlanSerializer,
+    RolSerializer,
+    UsuarioPlanReadSerializer,
+    UsuarioPlanDetalleReadSerializer,
+    UsuarioPlanSerializer,
+    UsuarioReadSerializer,
+    UsuarioRutinaReadSerializer,
+    UsuarioSerializer,
+    HistorialPesoSerializer,
+)
+from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
+from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
 
 
 class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
-    serializer_class = UsuarioReadSerializer
+    serializer_class = LoginSerializer
 
     def post(self, request):
-        email = request.data.get('email')
-        contrasena = request.data.get('contrasena')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        if not email or not contrasena:
-            return Response(
-                {'error': 'Email y contraseña son requeridos'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        usuario = serializer.validated_data['usuario']
+        token, _ = Token.objects.get_or_create(user=usuario)
 
+        return Response({
+            'token': token.key,
+            'usuario': UsuarioReadSerializer(usuario).data,
+        }, status=status.HTTP_200_OK)
+
+
+class RegisterView(GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = UsuarioSerializer
+
+    def post(self, request):
+        data = request.data.copy()
+
+        # Siempre forzar rol 'usuario' en el registro publico
+        rol_usuario, _ = Rol.objects.get_or_create(nombre_rol='usuario')
+        data['id_rol'] = rol_usuario.id_rol
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.save()
+        token, _ = Token.objects.get_or_create(user=usuario)
+
+        return Response({
+            'token': token.key,
+            'usuario': UsuarioReadSerializer(usuario).data,
+        }, status=status.HTTP_201_CREATED)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        request.user.auth_token.delete()
+        return Response({'message': 'Sesion cerrada correctamente.'}, status=status.HTTP_200_OK)
+
+
+class MeView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UsuarioReadSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class PerfilView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response({'detail': 'Todavia no completaste tu perfil.'}, status=status.HTTP_404_NOT_FOUND)
+
+        requiere_revision, mensaje = obtener_revision_requerida(perfil)
+        return Response({
+            'perfil': PerfilUsuarioSerializer(perfil).data,
+            'requiere_revision': requiere_revision,
+            'mensaje': mensaje,
+        })
+
+    def put(self, request):
+        import traceback
         try:
-            usuario = Usuario.objects.select_related('id_rol').get(email=email, contrasena=contrasena)
-            serializer = UsuarioReadSerializer(usuario)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Usuario.DoesNotExist:
-            return Response(
-                {'error': 'Credenciales inválidas'},
-                status=status.HTTP_401_UNAUTHORIZED
+            perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+            serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            perfil = serializer.save(id_usuario=request.user)
+
+            HistorialPeso.objects.update_or_create(
+                id_usuario=request.user,
+                fecha=timezone.localdate(),
+                defaults={'peso': perfil.peso_actual}
             )
+
+            asignacion, mensaje = actualizar_rutina_usuario(perfil)
+            plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+
+            return Response({
+                'perfil': PerfilUsuarioSerializer(perfil).data,
+                'requiere_revision': asignacion is None,
+                'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
+                'rutina': (
+                    UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                    if asignacion
+                    else None
+                ),
+                'plan_alimenticio': (
+                    UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
+                    if plan_alimenticio
+                    else None
+                ),
+                'mensaje_plan_alimenticio': mensaje_plan,
+            })
+        except Exception as e:
+            with open("C:/Users/pabli/Desktop/2do Año TSDWAD 2026/Programador-Web-TSDWAD-C2025/back/error.log", "a") as f:
+                f.write(traceback.format_exc() + "\n")
+            raise
+
+
+class MiRutinaView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response({'detail': 'Completa tu perfil para obtener una rutina.'}, status=status.HTTP_404_NOT_FOUND)
+
+        asignacion, mensaje = actualizar_rutina_usuario(perfil)
+        return Response({
+            'requiere_revision': asignacion is None,
+            'mensaje': mensaje,
+            'asignacion': (
+                UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                if asignacion
+                else None
+            ),
+        })
+
+
+class CompletarEjercicioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        ejercicio_id = request.data.get('ejercicio_id')
+        asignacion = UsuarioRutina.objects.filter(id_usuario=request.user).first()
+
+        if asignacion is None:
+            return Response({'detail': 'Todavia no tenes una rutina asignada.'}, status=status.HTTP_404_NOT_FOUND)
+
+        ejercicio = Ejercicio.objects.filter(
+            id_ejercicio=ejercicio_id,
+            id_rutina=asignacion.id_rutina,
+        ).first()
+        if ejercicio is None:
+            return Response({'detail': 'El ejercicio no pertenece a tu rutina.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        registro = RegistroEjercicio.objects.filter(
+            id_usuario=request.user,
+            id_ejercicio=ejercicio,
+            fecha=timezone.localdate(),
+        ).first()
+        if registro:
+            registro.delete()
+            completado = False
+        else:
+            RegistroEjercicio.objects.create(id_usuario=request.user, id_ejercicio=ejercicio)
+            completado = True
+
+        return Response({
+            'ejercicio_id': ejercicio.id_ejercicio,
+            'completado_hoy': completado,
+        })
+
+
+class MiPlanAlimenticioView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        if perfil is None:
+            return Response(
+                {'detail': 'Completa tu perfil para obtener una orientacion alimenticia.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        asignacion, mensaje = actualizar_plan_alimenticio_usuario(perfil)
+        return Response({
+            'requiere_revision': asignacion is None,
+            'mensaje': mensaje,
+            'asignacion': (
+                UsuarioPlanDetalleReadSerializer(asignacion, context={'request': request}).data
+                if asignacion
+                else None
+            ),
+        })
+
+
+class CompletarComidaPlanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        comida_plan_id = request.data.get('plan_comida_id')
+        asignacion = UsuarioPlan.objects.filter(
+            id_usuario=request.user,
+            estado='activo',
+        ).select_related('id_plan').order_by('-origen').first()
+
+        if asignacion is None:
+            return Response(
+                {'detail': 'Todavia no tenes un plan alimenticio asignado.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        comida_plan = PlanComida.objects.filter(
+            id_plan_comida=comida_plan_id,
+            id_plan=asignacion.id_plan,
+        ).first()
+        if comida_plan is None:
+            return Response(
+                {'detail': 'La comida no pertenece a tu plan alimenticio.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        registro = RegistroComidaPlan.objects.filter(
+            id_usuario=request.user,
+            id_plan_comida=comida_plan,
+            fecha=timezone.localdate(),
+        ).first()
+        if registro:
+            registro.delete()
+            completada = False
+        else:
+            RegistroComidaPlan.objects.create(
+                id_usuario=request.user,
+                id_plan_comida=comida_plan,
+            )
+            completada = True
+
+        return Response({
+            'plan_comida_id': comida_plan.id_plan_comida,
+            'completada_hoy': completada,
+        })
 
 
 class RolViewSet(viewsets.ModelViewSet):
-    queryset = Rol.objects.all()
+    queryset = Rol.objects.order_by('id_rol')
     serializer_class = RolSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+
+        return [IsAdminRole()]
 
 
 class UsuarioViewSet(viewsets.ModelViewSet):
-    queryset = Usuario.objects.select_related('id_rol').all()
+    queryset = Usuario.objects.select_related('id_rol').order_by('id_usuario')
     serializer_class = UsuarioSerializer
-    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['id_rol__nombre_rol', 'is_active']
+    search_fields = ['nombre', 'apellido', 'email']
+    ordering_fields = ['id_usuario', 'nombre', 'apellido', 'fecha_registro', 'is_active']
+    ordering = ['id_usuario']
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return UsuarioReadSerializer
+
         return UsuarioSerializer
+
+    def get_permissions(self):
+        if self.action == 'test':
+            return [AllowAny()]
+        if self.action in ['create', 'crear_nutricionista', 'nutricionistas']:
+            return [IsAdminRole()]
+        if self.action in ['list', 'destroy']:
+            return [IsAdminRole()]
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            return [IsAuthenticated(), IsSelfOrAdminRole()]
+
+        return [IsAuthenticated()]
+
+    @action(detail=False, methods=['get'])
+    def me(self, request):
+        serializer = UsuarioReadSerializer(request.user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def nutricionistas(self, request):
+        nutricionistas = self.get_queryset().filter(id_rol__nombre_rol='nutricionista')
+        serializer = UsuarioReadSerializer(nutricionistas, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='crear-nutricionista')
+    def crear_nutricionista(self, request):
+        serializer = NutricionistaCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        nutricionista = serializer.save()
+        return Response(UsuarioReadSerializer(nutricionista).data, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=['get'])
     def test(self, request):
         try:
             with connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
+                cursor.execute('SELECT 1')
             return Response({
                 'status': 'success',
-                'message': 'Conexión con la base de datos MySQL exitosa',
+                'message': 'Conexion con la base de datos MySQL exitosa',
                 'info': 'NutriApp - Backend API',
             }, status=status.HTTP_200_OK)
         except Exception as e:
@@ -72,46 +358,108 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
 
 class PlanViewSet(viewsets.ModelViewSet):
-    queryset = Plan.objects.all()
+    queryset = Plan.objects.order_by('id_plan')
     serializer_class = PlanSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['objetivo', 'nivel_actividad', 'activo']
+    search_fields = ['nombre_plan', 'descripcion', 'observaciones']
+    ordering_fields = ['id_plan', 'nombre_plan', 'duracion_dias', 'calorias_objetivo', 'objetivo', 'nivel_actividad', 'activo']
+    ordering = ['id_plan']
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return PlanDetalleReadSerializer
+
+        return PlanSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if user_has_role(self.request.user, 'administrador', 'nutricionista'):
+            return queryset
+
+        return queryset.filter(activo=True)
 
 
 class ComidaViewSet(viewsets.ModelViewSet):
-    queryset = Comida.objects.all()
+    queryset = Comida.objects.order_by('id_comida')
     serializer_class = ComidaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
+    pagination_class = None
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['nombre']
+    ordering_fields = ['id_comida', 'nombre', 'calorias']
+    ordering = ['id_comida']
+
+
+class HistorialPesoViewSet(viewsets.ModelViewSet):
+    queryset = HistorialPeso.objects.order_by('fecha')
+    serializer_class = HistorialPesoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(id_usuario=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(id_usuario=self.request.user)
 
 
 class UsuarioPlanViewSet(viewsets.ModelViewSet):
-    queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').all()
+    queryset = UsuarioPlan.objects.select_related('id_usuario', 'id_plan').order_by('id_usuario_plan')
     serializer_class = UsuarioPlanSerializer
-    permission_classes = [AllowAny]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['estado']
+    ordering_fields = ['id_usuario_plan', 'fecha_inicio', 'fecha_fin', 'estado']
+    ordering = ['id_usuario_plan']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if user_has_role(self.request.user, 'administrador', 'nutricionista'):
+            return queryset
+
+        return queryset.filter(id_usuario=self.request.user)
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return UsuarioPlanReadSerializer
+
         return UsuarioPlanSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAdminOrNutritionistRole()]
+
+        return [IsAuthenticated()]
 
     @action(detail=False, methods=['get'], url_path='por-usuario/(?P<usuario_id>[^/.]+)')
     def por_usuario(self, request, usuario_id=None):
-        planes = self.queryset.filter(id_usuario=usuario_id)
+        if not user_has_role(request.user, 'administrador', 'nutricionista'):
+            usuario_id = request.user.id_usuario
+
+        planes = self.get_queryset().filter(id_usuario=usuario_id)
         serializer = UsuarioPlanReadSerializer(planes, many=True)
         return Response(serializer.data)
 
 
 class PlanComidaViewSet(viewsets.ModelViewSet):
-    queryset = PlanComida.objects.select_related('id_plan', 'id_comida').all()
+    queryset = PlanComida.objects.select_related('id_plan', 'id_comida').order_by('id_plan_comida')
     serializer_class = PlanComidaSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedReadOrStaffRoleWrite]
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['tipo_comida']
+    ordering_fields = ['id_plan_comida', 'tipo_comida']
+    ordering = ['id_plan_comida']
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return PlanComidaReadSerializer
+
         return PlanComidaSerializer
 
     @action(detail=False, methods=['get'], url_path='por-plan/(?P<plan_id>[^/.]+)')
     def por_plan(self, request, plan_id=None):
         comidas = self.queryset.filter(id_plan=plan_id)
-        serializer = PlanComidaReadSerializer(comidas, many=True)
+        serializer = PlanComidaReadSerializer(comidas, many=True, context={'request': request})
         return Response(serializer.data)

@@ -123,6 +123,8 @@ python manage.py createsuperuser
 | PUT | `/api/usuarios/{id}/` | Actualizar usuario |
 | DELETE | `/api/usuarios/{id}/` | Eliminar usuario |
 
+
+
 ## 🎯 Próximos Pasos
 
 - [ ] Implementar autenticación JWT

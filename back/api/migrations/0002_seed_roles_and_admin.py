@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from django.db import migrations
 
 
@@ -14,8 +15,11 @@ def seed_roles_and_admin(apps, schema_editor):
         defaults={
             'nombre': 'Admin',
             'apellido': 'Sistema',
-            'contrasena': 'admin123',
+            'password': make_password('Admin123!Seguro'),
             'id_rol': rol_admin,
+            'is_active': True,
+            'is_staff': True,
+            'is_superuser': True,
         },
     )
 

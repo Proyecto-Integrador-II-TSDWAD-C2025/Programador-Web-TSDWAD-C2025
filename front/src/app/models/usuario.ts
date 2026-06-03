@@ -24,10 +24,21 @@ export interface LoginRequest {
   contrasena: string;
 }
 
+export interface LoginResponse {
+  token: string;
+  usuario: UsuarioRead;
+}
+
 export interface RegistroRequest {
   nombre: string;
   apellido: string;
   email: string;
   contrasena: string;
-  id_rol: number;
+}
+
+export interface NutricionistaRequest {
+  nombre: string;
+  apellido: string;
+  email: string;
+  contrasena?: string;
 }

@@ -54,28 +54,11 @@
           id="password"
           type="password"
           formControlName="contrasena"
-          placeholder="Mínimo 6 caracteres"
+          placeholder="Mínimo 8 caracteres"
           [class.is-invalid]="registroForm.get('contrasena')?.invalid && registroForm.get('contrasena')?.touched"
         />
         @if (registroForm.get('contrasena')?.invalid && registroForm.get('contrasena')?.touched) {
-          <small class="text-danger">La contraseña debe tener al menos 6 caracteres</small>
-        }
-      </div>
-
-      <div class="form-group">
-        <label for="rol">Rol</label>
-        <select
-          id="rol"
-          formControlName="id_rol"
-          [class.is-invalid]="registroForm.get('id_rol')?.invalid && registroForm.get('id_rol')?.touched"
-        >
-          <option value="">Seleccioná tu rol</option>
-          @for (rol of roles(); track rol.id_rol) {
-            <option [value]="rol.id_rol">{{ rol.nombre_rol }}</option>
-          }
-        </select>
-        @if (registroForm.get('id_rol')?.invalid && registroForm.get('id_rol')?.touched) {
-          <small class="text-danger">Seleccioná un rol</small>
+          <small class="text-danger">La contraseña debe tener al menos 8 caracteres</small>
         }
       </div>
 

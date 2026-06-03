@@ -1,9 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, switchMap } from 'rxjs';
+import { finalize, map, Observable, tap } from 'rxjs';
 import { API_URL } from './api.config';
-import { UsuarioRead, LoginRequest, RegistroRequest } from '../models';
+import { UsuarioRead, LoginRequest, LoginResponse, RegistroRequest } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,38 +18,68 @@ export class AuthService {
 
   constructor() {
     const stored = localStorage.getItem('usuario');
-    if (stored) {
+    const token = localStorage.getItem('auth_token');
+    if (stored && token) {
       try {
         const user: UsuarioRead = JSON.parse(stored);
         this.currentUser.set(user);
         this.isAuthenticated_.set(true);
+        this.refreshUser();
       } catch {
-        localStorage.removeItem('usuario');
+        this.clearSession();
       }
+    } else {
+      this.clearSession();
     }
   }
 
   login(credentials: LoginRequest): Observable<UsuarioRead> {
-    return this.http.post<UsuarioRead>(`${API_URL}/login/`, credentials).pipe(
-      tap((user) => {
-        this.currentUser.set(user);
-        this.isAuthenticated_.set(true);
-        localStorage.setItem('usuario', JSON.stringify(user));
-      })
+    return this.http.post<LoginResponse>(`${API_URL}/login/`, credentials).pipe(
+      tap((response) => this.saveSession(response)),
+      map((response) => response.usuario)
     );
   }
 
   registro(data: RegistroRequest): Observable<UsuarioRead> {
-    return this.http.post(`${API_URL}/usuarios/`, data).pipe(
-      switchMap(() => this.login({ email: data.email, contrasena: data.contrasena }))
+    return this.http.post<LoginResponse>(`${API_URL}/register/`, data).pipe(
+      tap((response) => this.saveSession(response)),
+      map((response) => response.usuario)
     );
   }
 
   logout(): void {
+    this.http.post(`${API_URL}/logout/`, {}).pipe(
+      finalize(() => {
+        this.clearSession();
+        this.router.navigate(['/login']);
+      })
+    ).subscribe({ error: () => {} });
+  }
+
+  private saveSession(response: LoginResponse): void {
+    this.currentUser.set(response.usuario);
+    this.isAuthenticated_.set(true);
+    localStorage.setItem('usuario', JSON.stringify(response.usuario));
+    localStorage.setItem('auth_token', response.token);
+  }
+
+  private refreshUser(): void {
+    this.http.get<UsuarioRead>(`${API_URL}/usuarios/me/`).subscribe({
+      next: (user) => {
+        this.currentUser.set(user);
+        localStorage.setItem('usuario', JSON.stringify(user));
+      },
+      error: () => {
+        this.clearSession();
+      },
+    });
+  }
+
+  private clearSession(): void {
     this.currentUser.set(null);
     this.isAuthenticated_.set(false);
     localStorage.removeItem('usuario');
-    this.router.navigate(['/login']);
+    localStorage.removeItem('auth_token');
   }
 
   getRole(): string {

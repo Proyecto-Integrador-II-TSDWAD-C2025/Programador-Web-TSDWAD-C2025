@@ -1,6 +1,8 @@
 -- ============================================================
 -- NutriApp - Script SQL de Base de Datos
 -- Motor: MySQL 8.x
+-- Nota: en la aplicacion real usar `python manage.py migrate`.
+-- Las migraciones tambien crean tablas de Django Auth, permisos y tokens.
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS proyectointegrador
@@ -22,12 +24,19 @@ CREATE TABLE IF NOT EXISTS ROL (
 -- Tabla: USUARIO
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS USUARIO (
+    password        VARCHAR(128) NOT NULL,
+    last_login      DATETIME(6)  NULL,
+    is_superuser    BOOLEAN      NOT NULL DEFAULT FALSE,
+    first_name      VARCHAR(150) NOT NULL DEFAULT '',
+    last_name       VARCHAR(150) NOT NULL DEFAULT '',
+    is_staff        BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_active       BOOLEAN      NOT NULL DEFAULT TRUE,
+    date_joined     DATETIME(6)  NOT NULL,
     id_usuario      INT          NOT NULL AUTO_INCREMENT,
     nombre          VARCHAR(100) NOT NULL,
     apellido        VARCHAR(100) NOT NULL,
     email           VARCHAR(255) NOT NULL,
-    contrasena      VARCHAR(255) NOT NULL,
-    fecha_registro  DATETIME     NOT NULL,
+    fecha_registro  DATETIME(6)  NOT NULL,
     id_rol          INT          NOT NULL,
     PRIMARY KEY (id_usuario),
     UNIQUE KEY uq_usuario_email (email),
@@ -92,7 +101,9 @@ CREATE TABLE IF NOT EXISTS PLAN_COMIDA (
 -- ------------------------------------------------------------
 INSERT INTO ROL (nombre_rol) VALUES
     ('administrador'),
-    ('usuario');
+    ('usuario'),
+    ('nutricionista');
 
-INSERT INTO USUARIO (nombre, apellido, email, contrasena, fecha_registro, id_rol)
-VALUES ('Admin', 'Sistema', 'admin@nutriapp.com', 'admin123', NOW(), 1);
+-- Los usuarios y tokens deben crearse con Django para que las contrasenas
+-- se guarden hasheadas. La migracion api.0002_seed_roles_and_admin crea
+-- el admin inicial usando django.contrib.auth.hashers.make_password().

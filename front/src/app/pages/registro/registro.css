@@ -193,4 +193,26 @@
   .registro-card h1 {
     font-size: 1.7rem;
   }
+  /* Responsive - Tablet */
+@media (min-width: 577px) and (max-width: 1024px) {
+  .registro-page {
+    padding: 120px 40px 40px;
+  }
+
+  .registro-card {
+    max-width: 560px;
+    padding: 34px;
+  }
+}
+
+/* Responsive - Mobile chico */
+@media (max-width: 480px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .registro-card h1 {
+    font-size: 1.5rem;
+  }
+}
 }

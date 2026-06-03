@@ -1,0 +1,113 @@
+<section class="food-plan-page">
+  <div class="food-plan-container">
+    <header class="food-plan-header">
+      <div>
+        <span class="food-plan-badge">Orientacion alimenticia</span>
+        <h1>Mi plan alimenticio</h1>
+        <p>Una plantilla inicial para ayudarte a organizar comidas variadas durante la semana.</p>
+      </div>
+      <nav class="food-plan-actions">
+        <a routerLink="/perfil">Editar perfil</a>
+        <a routerLink="/dashboard">Volver al panel</a>
+      </nav>
+    </header>
+
+    @if (cargando()) {
+      <p class="food-state">Cargando plan...</p>
+    } @else if (error()) {
+      <div class="food-state food-state-error">
+        <p>{{ error() }}</p>
+        <a routerLink="/perfil">Completar perfil</a>
+      </div>
+    } @else if (respuesta()?.requiere_revision) {
+      <div class="food-state animate-fade-in glass-panel px-4 py-5">
+        <div class="stepper-wrapper mb-4">
+          <div class="stepper-item completed">
+            <div class="step-counter"><i class="bi bi-check-lg"></i></div>
+            <div class="step-name">Perfil Completo</div>
+          </div>
+          <div class="stepper-item active">
+            <div class="step-counter"><i class="bi bi-hourglass-split"></i></div>
+            <div class="step-name">Revisión Profesional</div>
+          </div>
+          <div class="stepper-item">
+            <div class="step-counter"><i class="bi bi-journal-medical"></i></div>
+            <div class="step-name">Plan Activo</div>
+          </div>
+        </div>
+        <span class="food-plan-badge text-warning" style="background: rgba(255, 193, 7, 0.2); border-color: rgba(255, 193, 7, 0.4);"><i class="bi bi-shield-exclamation me-1"></i> Requiere supervisión</span>
+        <h2 class="mt-3">Tu alimentación necesita una mirada profesional</h2>
+        <p class="text-secondary">{{ respuesta()?.mensaje }}</p>
+        <a routerLink="/perfil" class="btn-primary-custom mt-3 d-inline-block text-decoration-none"><i class="bi bi-pencil-square me-2"></i>Revisar mis datos</a>
+      </div>
+    } @else if (respuesta()?.asignacion; as asignacion) {
+      <section class="food-overview">
+        <div>
+          <span class="food-plan-badge">{{ asignacion.origen === 'profesional' ? 'Asignado por profesional' : 'Sugerencia orientativa' }}</span>
+          <h2>{{ asignacion.plan.nombre_plan }}</h2>
+          <p>{{ asignacion.plan.descripcion }}</p>
+        </div>
+        <div class="food-progress">
+          <strong>{{ comidasCompletadas() }}/{{ totalComidas() }}</strong>
+          <span>comidas marcadas hoy</span>
+        </div>
+      </section>
+
+      <div class="food-meta">
+        <div><span>Duracion</span><strong>{{ asignacion.plan.duracion_dias }} dias</strong></div>
+        <div>
+          <span>Calorias Objetivo</span>
+          <strong>
+            @if (perfil()?.calorias_objetivo) {
+              {{ perfil()?.calorias_objetivo }} kcal
+            } @else {
+              {{ asignacion.plan.calorias_objetivo }} kcal (Ref)
+            }
+          </strong>
+        </div>
+        <div><span>Preferencia</span><strong>{{ asignacion.plan.preferencia_compatible }}</strong></div>
+      </div>
+
+      @if (perfil()?.macronutrientes_objetivo; as macros) {
+        <div class="macros-summary">
+          <p class="macros-title">Macronutrientes diarios sugeridos:</p>
+          <div class="macros-row">
+            <span class="macro-badge macro-protein">Proteinas: <strong>{{ macros.proteinas }}g</strong></span>
+            <span class="macro-badge macro-carbs">Carbohidratos: <strong>{{ macros.carbohidratos }}g</strong></span>
+            <span class="macro-badge macro-fat">Grasas: <strong>{{ macros.grasas }}g</strong></span>
+          </div>
+        </div>
+      }
+
+      <p class="food-reason">{{ asignacion.motivo }}</p>
+
+      <div class="food-day-list">
+        @for (dia of dias(); track dia) {
+          <section class="food-day">
+            <header><span>Dia {{ dia }}</span><strong>Ciclo orientativo</strong></header>
+            @for (item of comidasDelDia(dia); track item.id_plan_comida) {
+              <label class="food-row food-row-checkable" [class.food-row-completed]="item.completada_hoy">
+                <input
+                  type="checkbox"
+                  [checked]="item.completada_hoy"
+                  [disabled]="actualizando() === item.id_plan_comida"
+                  (change)="alternarComida(item.id_plan_comida)"
+                >
+                <span class="food-check" aria-hidden="true"></span>
+                <span class="food-time">{{ item.tipo_comida }}</span>
+                <span class="food-content">
+                  <strong>{{ nombreComida(item) }}</strong>
+                  <small>{{ item.porcion }} @if (item.alternativa) { · Alternativa: {{ item.alternativa }} }</small>
+                </span>
+              </label>
+            }
+          </section>
+        }
+      </div>
+
+      <p class="food-note">
+        Este menu es una orientacion inicial y utiliza un ciclo breve que puede repetirse. Consulta a un nutricionista para adaptarlo a tus necesidades.
+      </p>
+    }
+  </div>
+</section>

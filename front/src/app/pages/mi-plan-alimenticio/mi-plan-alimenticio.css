@@ -1,0 +1,345 @@
+.food-plan-page {
+  min-height: 100vh;
+  padding: 128px 28px 56px;
+  color: #1a1a2e;
+  background: #f2f7f3;
+}
+
+.food-plan-container {
+  width: min(1060px, 100%);
+  margin: 0 auto;
+}
+
+.food-plan-header,
+.food-overview {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.food-plan-header {
+  margin-bottom: 30px;
+}
+
+.food-plan-header h1 {
+  margin: 6px 0 8px;
+  font-size: 2.3rem;
+  font-weight: 800;
+}
+
+.food-plan-header p,
+.food-overview p {
+  max-width: 690px;
+  margin: 0;
+  color: #58665e;
+  line-height: 1.6;
+}
+
+.food-plan-badge {
+  color: #2d7a3a;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.food-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.food-plan-actions a,
+.food-state a {
+  border: 1px solid rgba(45, 122, 58, 0.3);
+  border-radius: 8px;
+  padding: 9px 13px;
+  color: #2d7a3a;
+  background: #fff;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.food-overview {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #dce7df;
+}
+
+.food-overview h2,
+.food-state h2 {
+  margin: 6px 0 8px;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.food-progress {
+  min-width: 160px;
+  border-left: 3px solid #55c966;
+  padding-left: 14px;
+}
+
+.food-progress strong,
+.food-progress span {
+  display: block;
+}
+
+.food-progress strong {
+  color: #2d7a3a;
+  font-size: 1.8rem;
+}
+
+.food-progress span {
+  color: #68776e;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.food-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  overflow: hidden;
+  margin: 20px 0 12px;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #dce7df;
+}
+
+.food-meta div {
+  padding: 14px 16px;
+  background: #fff;
+}
+
+.food-meta span,
+.food-meta strong {
+  display: block;
+}
+
+.food-meta span {
+  color: #718078;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.food-meta strong {
+  color: #24342a;
+  text-transform: capitalize;
+}
+
+.food-reason,
+.food-note {
+  color: #718078;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.food-reason {
+  margin: 0 0 22px;
+}
+
+.food-note {
+  margin: 20px 0 0;
+}
+
+.food-day-list {
+  display: grid;
+  gap: 16px;
+}
+
+.food-day {
+  overflow: hidden;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.food-day > header {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 16px;
+  color: #fff;
+  background: #2d7a3a;
+}
+
+.food-day > header span {
+  font-weight: 800;
+}
+
+.food-day > header strong {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.food-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 66px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2ee;
+}
+
+.food-row:last-child {
+  border-bottom: 0;
+}
+
+.food-row-checkable {
+  grid-template-columns: 20px 100px 1fr;
+  cursor: pointer;
+}
+
+.food-row-checkable:hover {
+  background: #f7fbf8;
+}
+
+.food-row input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.food-check {
+  width: 19px;
+  height: 19px;
+  border: 2px solid #93a69a;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.food-row-completed .food-check {
+  border-color: #2d7a3a;
+  background: #2d7a3a;
+  box-shadow: inset 0 0 0 4px #fff;
+}
+
+.food-time {
+  color: #2d7a3a;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.food-row strong,
+.food-row small {
+  display: block;
+}
+
+.food-row strong {
+  color: #24342a;
+}
+
+.food-row small {
+  margin-top: 3px;
+  color: #718078;
+}
+
+.food-row-completed strong {
+  color: #6b7d72;
+  text-decoration: line-through;
+}
+
+.food-state {
+  padding: 22px;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #fff;
+  color: #58665e;
+}
+
+.food-state-error {
+  border-color: rgba(220, 53, 69, 0.28);
+}
+
+@media (max-width: 680px) {
+  .food-plan-page {
+    padding: 104px 16px 34px;
+  }
+
+  .food-plan-header,
+  .food-overview {
+    display: block;
+  }
+
+  .food-plan-header h1 {
+    font-size: 1.9rem;
+  }
+
+  .food-plan-actions,
+  .food-progress {
+    margin-top: 16px;
+  }
+
+  .food-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .food-row,
+  .food-row-checkable {
+    grid-template-columns: 20px 1fr;
+  }
+
+  .food-row:not(.food-row-checkable) {
+    grid-template-columns: 1fr;
+  }
+
+  .food-row-checkable .food-time,
+  .food-row-checkable .food-content {
+    grid-column: 2;
+  }
+}
+
+.macros-summary {
+  margin: 0 0 20px;
+  padding: 16px;
+  border: 1px solid #dce7df;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.macros-title {
+  margin: 0 0 10px;
+  color: #24342a;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.macros-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.macro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.macro-badge strong {
+  font-weight: 800;
+}
+
+.macro-protein {
+  color: #1e3a8a;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.macro-carbs {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fef3c7;
+}
+
+.macro-fat {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+

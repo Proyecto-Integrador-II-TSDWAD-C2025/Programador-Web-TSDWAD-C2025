@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -10,6 +11,8 @@ import { RouterLink } from '@angular/router';
   styleUrl: './home.css',
 })
 export class Home {
+  private authService = inject(AuthService);
+  isLoggedIn = this.authService.isLoggedIn;
 
   // Hero
   badge = '✦ Nutrición inteligente';
@@ -17,8 +20,6 @@ export class Home {
   tituloDestacado = 'salud';
   tituloLinea2 = 'con un plan a tu medida';
   descripcion = 'NutriApp combina nutrición personalizada y rutinas de entrenamiento adaptadas a tu perfil para que alcances tus objetivos reales.';
-  btnPrimario = 'Comenzar ahora →';
-  btnSecundario = 'Ver planes';
   heroImg = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=700&auto=format&fit=crop&q=80';
   heroImgAlt = 'Nutrición saludable';
 
@@ -54,5 +55,4 @@ export class Home {
   ctaTag = 'Empezá hoy';
   ctaTitulo = '¿Listo para transformar tu salud?';
   ctaDescripcion = 'Comenzá con un plan personalizado de nutrición y entrenamiento diseñado para vos.';
-  ctaBtn = 'Contactar ahora →';
 }

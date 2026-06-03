@@ -94,7 +94,8 @@
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 13px 15px;
   border-radius: 14px;
@@ -106,9 +107,21 @@
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(45, 122, 58, 0.12);
+}
+
+.form-group input.is-invalid,
+.form-group select.is-invalid,
+.form-group textarea.is-invalid {
+  border-color: #dc3545;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 6px;
 }
 
 .btn-perfil {
@@ -128,6 +141,12 @@
   background-color: var(--color-primary-mid);
   color: #fff;
   transform: translateY(-2px);
+}
+
+.btn-perfil:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
 }
 
 .exito-message {
@@ -158,3 +177,74 @@
     grid-template-columns: 1fr;
   }
 }
+
+.error-message {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #a81f2c;
+  border: 1px solid rgba(220, 53, 69, 0.24);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.loading-message {
+  color: #4d5a52;
+  font-weight: 700;
+  margin: 12px 0 0;
+}
+
+.field-help {
+  color: #65736b;
+  line-height: 1.45;
+}
+
+/* Responsive - Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .perfil-page {
+    padding: 120px 30px 40px;
+  }
+
+  .perfil-card {
+    max-width: 640px;
+    padding: 32px;
+  }
+}
+
+.weight-history-section {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px dashed #dce7df;
+}
+
+.weight-history-section h2 {
+  color: var(--color-dark);
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.weight-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.weight-table th,
+.weight-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #dce7df;
+}
+
+.weight-table th {
+  font-weight: 700;
+  color: #4d5a52;
+  background-color: #f7fbf8;
+}
+
+.weight-table tr:hover {
+  background-color: #f9fdfa;
+}
+

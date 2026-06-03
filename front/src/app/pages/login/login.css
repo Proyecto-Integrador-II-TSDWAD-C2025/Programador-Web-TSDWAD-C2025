@@ -217,4 +217,15 @@
   .login-card h1 {
     font-size: 1.7rem;
   }
+  /* Responsive - Tablet */
+@media (min-width: 577px) and (max-width: 1024px) {
+  .login-page {
+    padding: 120px 40px 40px;
+  }
+
+  .login-card {
+    max-width: 520px;
+    padding: 34px;
+  }
+}
 }
