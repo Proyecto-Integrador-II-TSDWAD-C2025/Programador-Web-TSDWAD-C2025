@@ -1,3 +1,4 @@
+import logging
 from django.db import connection
 from django.utils import timezone
 from rest_framework import generics, status, viewsets
@@ -52,6 +53,7 @@ from .serializers import (
 from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
 from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
 
+logger = logging.getLogger(__name__)
 
 class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
@@ -112,11 +114,18 @@ class PerfilView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        perfil = PerfilUsuario.objects.filter(
+            id_usuario=request.user
+        ).first()
+
         if perfil is None:
-            return Response({'detail': 'Todavia no completaste tu perfil.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {'detail': 'Todavia no completaste tu perfil.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         requiere_revision, mensaje = obtener_revision_requerida(perfil)
+
         return Response({
             'perfil': PerfilUsuarioSerializer(perfil).data,
             'requiere_revision': requiere_revision,
@@ -124,10 +133,15 @@ class PerfilView(APIView):
         })
 
     def put(self, request):
-        import traceback
         try:
-            perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
-            serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
+            perfil = PerfilUsuario.objects.filter(
+                id_usuario=request.user
+            ).first()
+
+            serializer = PerfilUsuarioSerializer(
+                instance=perfil,
+                data=request.data
+            )
             serializer.is_valid(raise_exception=True)
             perfil = serializer.save(id_usuario=request.user)
 
@@ -138,27 +152,41 @@ class PerfilView(APIView):
             )
 
             asignacion, mensaje = actualizar_rutina_usuario(perfil)
-            plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+            plan_alimenticio, mensaje_plan = (
+                actualizar_plan_alimenticio_usuario(perfil)
+            )
 
             return Response({
                 'perfil': PerfilUsuarioSerializer(perfil).data,
                 'requiere_revision': asignacion is None,
-                'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
+                'mensaje': (
+                    mensaje
+                    or 'Perfil guardado y rutina recomendada correctamente.'
+                ),
                 'rutina': (
-                    UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                    UsuarioRutinaReadSerializer(
+                        asignacion,
+                        context={'request': request}
+                    ).data
                     if asignacion
                     else None
                 ),
                 'plan_alimenticio': (
-                    UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
+                    UsuarioPlanDetalleReadSerializer(
+                        plan_alimenticio,
+                        context={'request': request}
+                    ).data
                     if plan_alimenticio
                     else None
                 ),
                 'mensaje_plan_alimenticio': mensaje_plan,
             })
-        except Exception as e:
-            with open("C:/Users/pabli/Desktop/2do Año TSDWAD 2026/Programador-Web-TSDWAD-C2025/back/error.log", "a") as f:
-                f.write(traceback.format_exc() + "\n")
+
+        except Exception:
+            logger.exception(
+                "Error al actualizar el perfil del usuario %s",
+                request.user.pk
+            )
             raise
 
 
