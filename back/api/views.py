@@ -1,4 +1,5 @@
 import logging
+from rest_framework.exceptions import ValidationError
 from django.db import connection
 from django.utils import timezone
 from rest_framework import generics, status, viewsets
@@ -181,6 +182,9 @@ class PerfilView(APIView):
                 ),
                 'mensaje_plan_alimenticio': mensaje_plan,
             })
+
+        except ValidationError:
+            raise
 
         except Exception:
             logger.exception(
@@ -376,13 +380,22 @@ class UsuarioViewSet(viewsets.ModelViewSet):
         try:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT 1')
+
             return Response({
                 'status': 'success',
                 'message': 'Conexion con la base de datos MySQL exitosa',
                 'info': 'NutriApp - Backend API',
             }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except Exception:
+            logger.exception(
+                "Error al comprobar la conexion con la base de datos"
+            )
+
+            return Response({
+                'status': 'error',
+                'message': 'No se pudo verificar la conexion con la base de datos.'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PlanViewSet(viewsets.ModelViewSet):
