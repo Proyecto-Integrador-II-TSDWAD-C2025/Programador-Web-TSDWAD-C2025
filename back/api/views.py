@@ -1,6 +1,6 @@
 import logging
-from rest_framework.exceptions import ValidationError
-from django.db import connection
+from rest_framework.exceptions import APIException
+from django.db import connection, transaction
 from django.utils import timezone
 from rest_framework import generics, status, viewsets
 from rest_framework.authtoken.models import Token
@@ -55,6 +55,7 @@ from .recommendations import actualizar_rutina_usuario, obtener_revision_requeri
 from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
 
 logger = logging.getLogger(__name__)
+
 
 class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
@@ -135,63 +136,48 @@ class PerfilView(APIView):
 
     def put(self, request):
         try:
-            perfil = PerfilUsuario.objects.filter(
-                id_usuario=request.user
-            ).first()
-
-            serializer = PerfilUsuarioSerializer(
-                instance=perfil,
-                data=request.data
-            )
-            serializer.is_valid(raise_exception=True)
-            perfil = serializer.save(id_usuario=request.user)
-
-            HistorialPeso.objects.update_or_create(
-                id_usuario=request.user,
-                fecha=timezone.localdate(),
-                defaults={'peso': perfil.peso_actual}
-            )
-
-            asignacion, mensaje = actualizar_rutina_usuario(perfil)
-            plan_alimenticio, mensaje_plan = (
-                actualizar_plan_alimenticio_usuario(perfil)
-            )
-
-            return Response({
-                'perfil': PerfilUsuarioSerializer(perfil).data,
-                'requiere_revision': asignacion is None,
-                'mensaje': (
-                    mensaje
-                    or 'Perfil guardado y rutina recomendada correctamente.'
-                ),
-                'rutina': (
-                    UsuarioRutinaReadSerializer(
-                        asignacion,
-                        context={'request': request}
-                    ).data
-                    if asignacion
-                    else None
-                ),
-                'plan_alimenticio': (
-                    UsuarioPlanDetalleReadSerializer(
-                        plan_alimenticio,
-                        context={'request': request}
-                    ).data
-                    if plan_alimenticio
-                    else None
-                ),
-                'mensaje_plan_alimenticio': mensaje_plan,
-            })
-
-        except ValidationError:
+            return self._guardar_perfil(request)
+        except APIException:
             raise
-
         except Exception:
             logger.exception(
                 "Error al actualizar el perfil del usuario %s",
                 request.user.pk
             )
-            raise
+            return Response(
+                {'detail': 'No se pudo guardar el perfil. Intenta nuevamente.'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @transaction.atomic
+    def _guardar_perfil(self, request):
+        perfil = PerfilUsuario.objects.filter(id_usuario=request.user).first()
+        serializer = PerfilUsuarioSerializer(instance=perfil, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        perfil = serializer.save(id_usuario=request.user)
+
+        HistorialPeso.objects.update_or_create(
+            id_usuario=request.user,
+            fecha=timezone.localdate(),
+            defaults={'peso': perfil.peso_actual},
+        )
+        asignacion, mensaje = actualizar_rutina_usuario(perfil)
+        plan_alimenticio, mensaje_plan = actualizar_plan_alimenticio_usuario(perfil)
+
+        return Response({
+            'perfil': PerfilUsuarioSerializer(perfil).data,
+            'requiere_revision': asignacion is None,
+            'mensaje': mensaje or 'Perfil guardado y rutina recomendada correctamente.',
+            'rutina': (
+                UsuarioRutinaReadSerializer(asignacion, context={'request': request}).data
+                if asignacion else None
+            ),
+            'plan_alimenticio': (
+                UsuarioPlanDetalleReadSerializer(plan_alimenticio, context={'request': request}).data
+                if plan_alimenticio else None
+            ),
+            'mensaje_plan_alimenticio': mensaje_plan,
+        })
 
 
 class MiRutinaView(APIView):

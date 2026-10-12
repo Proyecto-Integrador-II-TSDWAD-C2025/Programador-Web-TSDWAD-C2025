@@ -4,29 +4,42 @@ Django settings for proyecto project.
 
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+
 from django.core.exceptions import ImproperlyConfigured
-load_dotenv()
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+def env_required(name):
+    value = os.getenv(name)
+    if not value or not value.strip():
+        raise ImproperlyConfigured(
+            f'La variable de entorno {name} es obligatoria.'
+        )
+    return value
 
-if not SECRET_KEY:
-    raise ImproperlyConfigured(
-        'La variable de entorno SECRET_KEY es obligatoria.'
-    )
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv(
-        'ALLOWED_HOSTS',
-        'localhost,127.0.0.1'
-    ).split(',')
-    if host.strip()
-]
+def env_bool(name, default=False):
+    value = os.getenv(name, str(default)).strip().lower()
+    if value in ('true', '1'):
+        return True
+    if value in ('false', '0'):
+        return False
+    raise ImproperlyConfigured(f'{name} debe ser True o False (1 o 0).')
+
+
+def env_list(name, default=''):
+    return [value.strip() for value in os.getenv(name, default).split(',') if value.strip()]
+
+
+DEBUG = env_bool('DEBUG')
+SECRET_KEY = env_required('SECRET_KEY')
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1' if DEBUG else '')
+
+if not DEBUG and (not ALLOWED_HOSTS or '*' in ALLOWED_HOSTS):
+    raise ImproperlyConfigured('Configura ALLOWED_HOSTS con dominios explicitos en produccion.')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -77,20 +90,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'proyecto.wsgi.application'
 
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-
-if not DB_PASSWORD:
-    raise ImproperlyConfigured(
-        'La variable de entorno DB_PASSWORD es obligatoria.'
-    )
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'proyectointegrador'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': DB_PASSWORD,
-        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'NAME': os.getenv('DB_NAME', 'proyectointegrador') if DEBUG else env_required('DB_NAME'),
+        'USER': env_required('DB_USER'),
+        'PASSWORD': env_required('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost') if DEBUG else env_required('DB_HOST'),
         'PORT': os.getenv('DB_PORT', '3306'),
     }
 }
@@ -148,8 +154,30 @@ REST_FRAMEWORK = {
 
 # CORS Configuration
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',
-    'http://127.0.0.1:4200',
-    'http://localhost:3000',
-]
+CORS_ALLOWED_ORIGINS = env_list(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:4200,http://127.0.0.1:4200,http://localhost:3000' if DEBUG else '',
+)
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+
+# Railway termina TLS en su proxy. Activar solo si el proxy controla este header.
+if env_bool('TRUST_X_FORWARDED_PROTO'):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', not DEBUG)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+# Empezar con una hora; no forzar subdominios ni preload sin validar sus certificados.
+SECURE_HSTS_SECONDS = 0 if DEBUG else 3600
+
+# La plataforma recoge stderr; no se guardan archivos ni payloads de Perfil.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler'},
+    },
+    'loggers': {
+        'api': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
+}
