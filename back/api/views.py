@@ -3,7 +3,6 @@ from rest_framework.exceptions import APIException
 from django.db import connection, transaction
 from django.utils import timezone
 from rest_framework import generics, status, viewsets
-from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -53,11 +52,14 @@ from .serializers import (
 )
 from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
 from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
+from .authentication import issue_token_for_user, token_expires_at
 
 logger = logging.getLogger(__name__)
 
 
 class LoginView(GenericAPIView):
+    # Un token viejo enviado por el cliente no debe impedir iniciar sesion.
+    authentication_classes = []
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
 
@@ -66,15 +68,17 @@ class LoginView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         usuario = serializer.validated_data['usuario']
-        token, _ = Token.objects.get_or_create(user=usuario)
+        token = issue_token_for_user(usuario)
 
         return Response({
             'token': token.key,
+            'expires_at': token_expires_at(token).isoformat(),
             'usuario': UsuarioReadSerializer(usuario).data,
         }, status=status.HTTP_200_OK)
 
 
 class RegisterView(GenericAPIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
     serializer_class = UsuarioSerializer
 
@@ -88,10 +92,11 @@ class RegisterView(GenericAPIView):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         usuario = serializer.save()
-        token, _ = Token.objects.get_or_create(user=usuario)
+        token = issue_token_for_user(usuario)
 
         return Response({
             'token': token.key,
+            'expires_at': token_expires_at(token).isoformat(),
             'usuario': UsuarioReadSerializer(usuario).data,
         }, status=status.HTTP_201_CREATED)
 
