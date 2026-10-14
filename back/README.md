@@ -52,6 +52,50 @@ El servidor estará disponible en `http://localhost:8000`
 
 Acceder a `http://localhost:8000/admin/` para gestionar datos (requiere antes crear un superusuario)
 
+## Tokens de API: vencimiento de 25 minutos
+
+`AUTH_TOKEN_TTL_MINUTES=25` define el plazo absoluto desde la emision del token.
+La actividad y un nuevo login mientras el token sigue vigente no extienden ese plazo.
+Al vencer, los recursos protegidos responden `401` y el usuario debe iniciar sesion otra vez.
+El login reemplaza un token vencido; no necesita migraciones nuevas ni cambios en el
+header Android `Authorization: Token <token>`. Login y registro devuelven ademas
+`expires_at` en formato ISO 8601. La aplicacion detecta el vencimiento en su siguiente
+peticion protegida; este cambio no agrega un temporizador de cierre visual al cliente.
+
+Los tokens emitidos hace mas de 25 minutos tambien seran rechazados al desplegar este
+cambio. No renovar su fecha ni desactivar la expiracion para conservar esas sesiones.
+Los endpoints publicos de login y registro no autentican el token viejo que pudiera
+enviar el cliente: validan las credenciales o datos de registro correspondientes.
+
+DRF mantiene un token por cuenta. Una cuenta compartida comparte el vencimiento y un
+logout revoca la sesion de todos los dispositivos. Para sesiones independientes se
+necesitan cuentas distintas o un esquema de multiples tokens, no cambios de password
+o rotacion del token en cada login. El plazo aplica a tokens de la API, no a cookies
+del panel de administracion Django.
+
+## Cuenta administradora de pruebas
+
+Desde `back/`, en una terminal interactiva del entorno aprobado y con este codigo
+desplegado:
+
+```text
+python manage.py crear_admin_pruebas --email CORREO_DEL_EQUIPO --nombre Equipo --apellido Pruebas
+```
+
+El responsable ingresa y confirma la contrasena de forma privada, sin eco. Debe tener
+al menos 12 caracteres, mayuscula, minuscula, numero y simbolo, y superar los validadores
+de Django. No pasar contrasenas como argumentos, variables publicas o texto del chat.
+
+El comando crea solo una cuenta nueva con rol `administrador` de la aplicacion,
+`is_staff=False` e `is_superuser=False`: no habilita el panel Django. No crea un token,
+no cambia cuentas existentes y no instala administradores mediante migraciones.
+Ejecutar el comando contra el entorno correcto; no crear esta cuenta como parte de las
+pruebas automaticas ni ejecutar migraciones productivas para esta tarea.
+
+La contrasena compartida debe distribuirse por un canal privado acordado por el equipo
+y la cuenta debe deshabilitarse cuando termine su uso de pruebas. El administrador
+de aplicacion tiene acceso amplio a la API: no utilizar datos personales reales.
+
 ## CORS Configuration
 
 Configurar `CORS_ALLOWED_ORIGINS` con una lista separada por comas, por ejemplo

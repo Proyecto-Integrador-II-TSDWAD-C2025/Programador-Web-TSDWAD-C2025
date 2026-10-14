@@ -34,6 +34,16 @@ def env_list(name, default=''):
     return [value.strip() for value in os.getenv(name, default).split(',') if value.strip()]
 
 
+def env_positive_int(name, default):
+    try:
+        value = int(os.getenv(name, str(default)))
+    except ValueError:
+        raise ImproperlyConfigured(f'{name} debe ser un entero positivo.') from None
+    if value <= 0:
+        raise ImproperlyConfigured(f'{name} debe ser un entero positivo.')
+    return value
+
+
 DEBUG = env_bool('DEBUG')
 SECRET_KEY = env_required('SECRET_KEY')
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1' if DEBUG else '')
@@ -134,12 +144,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'api.Usuario'
 
+# Vencimiento absoluto desde la emision; la actividad no renueva este plazo.
+AUTH_TOKEN_TTL_MINUTES = env_positive_int('AUTH_TOKEN_TTL_MINUTES', 25)
+
 # REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'api.authentication.ExpiringTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_THROTTLE_CLASSES': [

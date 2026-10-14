@@ -69,6 +69,20 @@ class EnvironmentSettingsTestCase(SimpleTestCase):
             with self.subTest(name=name), self.assertRaises(ImproperlyConfigured):
                 self.load_settings({name: 'maybe'})
 
+    def test_token_lifetime_defaults_to_25_minutes(self):
+        settings = self.load_settings()
+        self.assertEqual(settings['AUTH_TOKEN_TTL_MINUTES'], 25)
+        self.assertEqual(settings['REST_FRAMEWORK']['DEFAULT_AUTHENTICATION_CLASSES'][0],
+                         'api.authentication.ExpiringTokenAuthentication')
+
+    def test_token_lifetime_is_configurable(self):
+        self.assertEqual(self.load_settings({'AUTH_TOKEN_TTL_MINUTES': '30'})['AUTH_TOKEN_TTL_MINUTES'], 30)
+
+    def test_invalid_token_lifetime_is_rejected(self):
+        for value in ('0', '-1', '25.5', 'invalid'):
+            with self.subTest(value=value), self.assertRaises(ImproperlyConfigured):
+                self.load_settings({'AUTH_TOKEN_TTL_MINUTES': value})
+
     @override_settings(SECURE_SSL_REDIRECT=True, SECURE_PROXY_SSL_HEADER=('HTTP_X_FORWARDED_PROTO', 'https'))
     def test_trusted_proxy_does_not_redirect_https_in_a_loop(self):
         request = RequestFactory().get('/api/perfil/', HTTP_X_FORWARDED_PROTO='https')
