@@ -17,6 +17,7 @@ from .views import (
     UsuarioPlanViewSet,
     PlanComidaViewSet,
     HistorialPesoViewSet,
+    ContactoView,
 )
 
 router = DefaultRouter()
@@ -38,5 +39,6 @@ urlpatterns = [
     path('mi-rutina/completar-ejercicio/', CompletarEjercicioView.as_view(), name='completar-ejercicio'),
     path('mi-plan-alimenticio/', MiPlanAlimenticioView.as_view(), name='mi-plan-alimenticio'),
     path('mi-plan-alimenticio/completar-comida/', CompletarComidaPlanView.as_view(), name='completar-comida-plan'),
+    path('contacto/', ContactoView.as_view(), name='contacto'),
     path('', include(router.urls)),
 ]

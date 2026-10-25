@@ -14,6 +14,7 @@ from .models import (
     Usuario,
     UsuarioPlan,
     UsuarioRutina,
+    MensajeContacto,
 )
 
 
@@ -120,3 +121,11 @@ class RegistroEjercicioAdmin(admin.ModelAdmin):
     list_display = ['id_registro_ejercicio', 'id_usuario', 'id_ejercicio', 'fecha']
     list_filter = ['fecha']
     search_fields = ['id_usuario__nombre', 'id_usuario__apellido', 'id_ejercicio__nombre']
+
+
+@admin.register(MensajeContacto)
+class MensajeContactoAdmin(admin.ModelAdmin):
+    list_display = ('asunto', 'nombre', 'email', 'fecha_envio', 'leido')
+    list_filter = ('leido', 'fecha_envio')
+    search_fields = ('nombre', 'email', 'asunto', 'mensaje')
+    readonly_fields = ('fecha_envio',)

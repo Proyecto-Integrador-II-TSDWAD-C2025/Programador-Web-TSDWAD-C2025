@@ -17,6 +17,7 @@ from .models import (
     UsuarioRutina,
     RegistroEjercicio,
     HistorialPeso,
+    MensajeContacto,
 )
 from .permissions import user_has_role
 from .nutrition_recommendations import calcular_requerimientos_nutricionales
@@ -349,3 +350,43 @@ class UsuarioRutinaReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioRutina
         fields = ['id_usuario_rutina', 'motivo', 'fecha_asignacion', 'rutina']
+
+
+class MensajeContactoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MensajeContacto
+        fields = [
+            'id_mensaje',
+            'nombre',
+            'email',
+            'asunto',
+            'mensaje',
+            'fecha_envio',
+            'leido',
+        ]
+        read_only_fields = ['id_mensaje', 'fecha_envio', 'leido']
+
+    def validate_nombre(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError(
+                'Ingresa al menos 3 caracteres.'
+            )
+        return value.strip()
+
+    def validate_asunto(self, value):
+        if len(value.strip()) < 3:
+            raise serializers.ValidationError(
+                'Ingresa al menos 3 caracteres.'
+            )
+        return value.strip()
+
+    def validate_mensaje(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError(
+                'Escribe un mensaje de al menos 10 caracteres.'
+            )
+        if len(value.strip()) > 1000:
+            raise serializers.ValidationError(
+                'El mensaje no puede superar los 1000 caracteres.'
+            )
+        return value.strip()

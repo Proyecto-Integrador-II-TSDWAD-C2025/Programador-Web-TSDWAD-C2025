@@ -14,6 +14,7 @@ from .models import (
     UsuarioPlan,
     UsuarioRutina,
     HistorialPeso,
+    MensajeContacto,
 )
 
 
@@ -456,4 +457,105 @@ class ReqNutricionalesYHistorialTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data['results']), 2)
         self.assertEqual(float(response.data['results'][0]['peso']), 72.50)
+
+
+class PermisosUsuariosTestCase(TestCase):
+    def setUp(self):
+        self.rol_usuario = Rol.objects.create(nombre_rol='usuario')
+        self.rol_admin = Rol.objects.create(nombre_rol='administrador')
+        self.rol_admin_mayusculas = Rol.objects.create(
+            nombre_rol='Administrador'
+        )
+
+        self.usuario = Usuario.objects.create_user(
+            email='usuario@example.com',
+            password='ClaveSegura123!',
+            nombre='Usuario',
+            apellido='Comun',
+            id_rol=self.rol_usuario,
+        )
+        self.admin = Usuario.objects.create_superuser(
+            email='admin@example.com',
+            password='Admin123!Seguro',
+            nombre='Admin',
+            apellido='Sistema',
+            id_rol=self.rol_admin,
+        )
+        self.admin_mayusculas = Usuario.objects.create_user(
+            email='admin2@example.com',
+            password='Admin123!Seguro',
+            nombre='Admin',
+            apellido='Mayusculas',
+            id_rol=self.rol_admin_mayusculas,
+        )
+        self.client = APIClient()
+
+    def test_lista_usuarios_admin_200(self):
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.get('/api/usuarios/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_lista_usuarios_admin_con_mayusculas_200(self):
+        self.client.force_authenticate(user=self.admin_mayusculas)
+        response = self.client.get('/api/usuarios/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_lista_usuarios_usuario_comun_403(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.get('/api/usuarios/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_lista_usuarios_sin_token_401(self):
+        response = self.client.get('/api/usuarios/')
+        self.assertEqual(response.status_code, 401)
+
+
+class ContactoTestCase(TestCase):
+    def setUp(self):
+        self.rol_usuario = Rol.objects.create(nombre_rol='usuario')
+        self.usuario = Usuario.objects.create_user(
+            email='usuario@example.com',
+            password='ClaveSegura123!',
+            nombre='Usuario',
+            apellido='Comun',
+            id_rol=self.rol_usuario,
+        )
+        self.client = APIClient()
+
+    def test_contacto_requiere_autenticacion(self):
+        response = self.client.post('/api/contacto/', {})
+        self.assertEqual(response.status_code, 401)
+
+    def test_contacto_datos_validos_crea_mensaje(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.post('/api/contacto/', {
+            'nombre': 'Ana Perez',
+            'email': 'ana@example.com',
+            'asunto': 'Consulta',
+            'mensaje': 'Quisiera consultar por el plan alimenticio.',
+        })
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(MensajeContacto.objects.count(), 1)
+
+    def test_contacto_mensaje_corto_400(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.post('/api/contacto/', {
+            'nombre': 'Ana',
+            'email': 'ana@example.com',
+            'asunto': 'Consulta',
+            'mensaje': 'Corto',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(MensajeContacto.objects.count(), 0)
+
+    def test_contacto_email_invalido_400(self):
+        self.client.force_authenticate(user=self.usuario)
+        response = self.client.post('/api/contacto/', {
+            'nombre': 'Ana Perez',
+            'email': 'correo-invalido',
+            'asunto': 'Consulta',
+            'mensaje': 'Quisiera consultar por el plan alimenticio.',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(MensajeContacto.objects.count(), 0)
 
