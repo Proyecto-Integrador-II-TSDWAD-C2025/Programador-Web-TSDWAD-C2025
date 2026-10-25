@@ -24,6 +24,7 @@ from .models import (
     UsuarioPlan,
     UsuarioRutina,
     HistorialPeso,
+    MensajeContacto,
 )
 from .permissions import (
     IsAdminOrNutritionistRole,
@@ -49,6 +50,7 @@ from .serializers import (
     UsuarioRutinaReadSerializer,
     UsuarioSerializer,
     HistorialPesoSerializer,
+    MensajeContactoSerializer,
 )
 from .recommendations import actualizar_rutina_usuario, obtener_revision_requerida
 from .nutrition_recommendations import actualizar_plan_alimenticio_usuario
@@ -495,3 +497,21 @@ class PlanComidaViewSet(viewsets.ModelViewSet):
         comidas = self.queryset.filter(id_plan=plan_id)
         serializer = PlanComidaReadSerializer(comidas, many=True, context={'request': request})
         return Response(serializer.data)
+
+
+class ContactoView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MensajeContactoSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                'detail': 'Consulta enviada correctamente.',
+                'id_mensaje': serializer.instance.id_mensaje,
+            },
+            status=status.HTTP_201_CREATED,
+        )

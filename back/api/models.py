@@ -393,3 +393,22 @@ class HistorialPeso(models.Model):
 
     def __str__(self):
         return f"{self.id_usuario} - {self.peso} kg el {self.fecha}"
+
+
+class MensajeContacto(models.Model):
+    id_mensaje = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=100)
+    email = models.EmailField(max_length=255)
+    asunto = models.CharField(max_length=150)
+    mensaje = models.TextField()
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+    leido = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'MENSAJE_CONTACTO'
+        verbose_name = 'Mensaje de contacto'
+        verbose_name_plural = 'Mensajes de contacto'
+        ordering = ['-fecha_envio']
+
+    def __str__(self):
+        return f'{self.asunto} - {self.email}'
